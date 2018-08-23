@@ -25,7 +25,7 @@
       <div class="field">
         <v-flex>
           <v-select
-           :items="dynasty"
+           :items="dynasties"
            label="Select your dynasty"
            v-model="dynasty"
            ></v-select>
@@ -51,39 +51,65 @@ export default {
       confirmPassword: null,
       feedback: null,
       code_name: null,
-      dynasty: ['Jade', 'Pearl', 'Monkey', 'Panda']
+      dynasty: null,
+      kill_code: 'Generated when game starts',
+      dynasties: ['Jade', 'Pearl', 'Monkey', 'Panda']
     }
   },
   methods: {
     signup() {
+      var self = this
       const ref = firebase.firestore().collection('users')
-      if(this.password == this.confirmPassword) {
-        if(this.name && this.email && this.password){
-          firebase.auth().createUserWithEmailAndPassword(this.email, this.password)
-          .then(cred => {
-            ref.doc(cred.user.email).set({
-                  name: this.name,
-                  email: this.email,
-                  dynasty: this.dynasty,
-                  code_name: this.code_name,
-                  uploadedPhoto: false,
-                  team_number: null,
-                  target_team_number: null,
-                  num_kills: 0,
-                  days_since_last_kill: 0
-                })
-              }).then(() => {
-                firebase.auth().currentUser.sendEmailVerification()
-              }).then(() => {this.$router.push({ name: 'VerifyEmail' })})
+      var code_name_available = this.checkCodeNameAvailability()
+      if(code_name_available) {
+        if(this.password == this.confirmPassword) {
+          if(this.name && this.email && this.password){
+            firebase.auth().createUserWithEmailAndPassword(this.email,this.password)
+            .then(() => {
+              this.generateKillCode()
+            })
+            .then(() => {
+              console.log('creating account data ')
+              ref.doc(this.email).set({
+                name: this.name,
+                email: this.email,
+                dynasty: this.dynasty,
+                code_name: this.code_name,
+                uploadedPhoto: false,
+                team_number: null,
+                target_team_number: null,
+                num_kills: 0,
+                days_since_last_kill: 0,
+                kill_code: self.kill_code,
+                status: 'Alive'
+              })
+            })
+            // .then(() => {
+            //       firebase.firestore().collection('code_names').doc("existing_code_names").get()
+            //         .then(doc => {
+            //           var names = doc.data().name_list
+            //           names.push(self.code_name)
+            //           firebase.firestore().collection('code_names').doc("existing_code_names").set(
+            //             { name_list: names }
+            //           )
+            //         })
+            //       })
+            .then(() => {
+                console.log('sending email')
+                firebase.auth().currentUser.sendEmailVerification()})
+            .then(() => {this.$router.push({ name: 'VerifyEmail' })})
               .catch(err => {
                 console.log(err)
                 this.feedback = err.message})
-            }
-         else {
-          this.feedback = 'Please complete all fields.'
+              }
+           else {
+            this.feedback = 'Please complete all fields.'
+          }
+        } else {
+          this.feedback = 'Passwords do not match.'
         }
       } else {
-        this.feedback = 'Passwords do not match.'
+        this.feedback = 'Code name is taken, please try another one.'
       }
     },
     generateRandomName() {
@@ -100,6 +126,23 @@ export default {
           this.code_name = adj + " " + noun
         })
       })
+    },
+    generateKillCode(){
+      var kill_codes = []
+      firebase.firestore().collection('kill_codes').doc('existing_kill_codes').get()
+      .then(doc => {
+        kill_codes = doc.data().codes_list
+        this.kill_code = kill_codes.pop()
+        firebase.firestore().collection('kill_codes').doc('existing_kill_codes')
+          .set({codes_list: kill_codes})
+      })
+      return new Promise((res,rej) => {
+        setTimeout(() => res(), 1000)
+      })
+    },
+    checkCodeNameAvailability() {
+      console.log('check availability')
+      return true
     }
   }
 }

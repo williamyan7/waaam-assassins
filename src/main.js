@@ -18,7 +18,7 @@ var config = {
     authDomain: "waaam-assassins.firebaseapp.com",
     databaseURL: "https://waaam-assassins.firebaseio.com",
     projectId: "waaam-assassins",
-    storageBucket: "",
+    storageBucket: "waaam-assassins.appspot.com",
     messagingSenderId: "734206095654"
   }
 

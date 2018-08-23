@@ -48,7 +48,7 @@ export default {
     login() {
       firebase.auth().signInWithEmailAndPassword(this.email, this.password)
       .then(user => {
-        this.$router.push({ name: 'CurrentPairing' })
+        this.$router.push({ name: 'EditProfile' })
       }).catch(error => {
         this.feedback = error.message
       })
