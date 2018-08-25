@@ -52,6 +52,7 @@ export default {
       feedback: null,
       code_name: null,
       dynasty: null,
+      existing_code_names: [],
       kill_code: 'Generated when game starts',
       dynasties: ['Jade', 'Pearl', 'Monkey', 'Panda']
     }
@@ -61,15 +62,15 @@ export default {
       var self = this
       const ref = firebase.firestore().collection('users')
       var code_name_available = this.checkCodeNameAvailability()
-      if(code_name_available) {
-        if(this.password == this.confirmPassword) {
-          if(this.name && this.email && this.password){
+      if(this.name && this.email && this.password && this.code_name){
+        if(code_name_available) {
+          if(this.password == this.confirmPassword) {
+
             firebase.auth().createUserWithEmailAndPassword(this.email,this.password)
             .then(() => {
               this.generateKillCode()
             })
             .then(() => {
-              console.log('creating account data ')
               ref.doc(this.email).set({
                 name: this.name,
                 email: this.email,
@@ -84,18 +85,7 @@ export default {
                 status: 'Alive'
               })
             })
-            // .then(() => {
-            //       firebase.firestore().collection('code_names').doc("existing_code_names").get()
-            //         .then(doc => {
-            //           var names = doc.data().name_list
-            //           names.push(self.code_name)
-            //           firebase.firestore().collection('code_names').doc("existing_code_names").set(
-            //             { name_list: names }
-            //           )
-            //         })
-            //       })
             .then(() => {
-                console.log('sending email')
                 firebase.auth().currentUser.sendEmailVerification()})
             .then(() => {this.$router.push({ name: 'VerifyEmail' })})
               .catch(err => {
@@ -103,13 +93,13 @@ export default {
                 this.feedback = err.message})
               }
            else {
-            this.feedback = 'Please complete all fields.'
+            this.feedback = 'Passwords do not match.'
           }
         } else {
-          this.feedback = 'Passwords do not match.'
+          this.feedback = 'Code name is taken, please try another one.'
         }
       } else {
-        this.feedback = 'Code name is taken, please try another one.'
+        this.feedback = 'Please complete all fields.'
       }
     },
     generateRandomName() {
@@ -141,9 +131,17 @@ export default {
       })
     },
     checkCodeNameAvailability() {
-      console.log('check availability')
-      return true
+      return !(this.existing_code_names.indexOf(this.code_name.toLowerCase()) > -1)
     }
+  },
+  created() {
+    var self = this
+    firebase.firestore().collection('users').get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        self.existing_code_names.push(doc.data().code_name.toLowerCase())
+      })
+    })
   }
 }
 </script>

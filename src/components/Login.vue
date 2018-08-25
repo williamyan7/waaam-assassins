@@ -48,14 +48,13 @@ export default {
     login() {
       firebase.auth().signInWithEmailAndPassword(this.email, this.password)
       .then(user => {
-        this.$router.push({ name: 'EditProfile' })
+        this.$router.push({ name: 'Profile' })
       }).catch(error => {
         this.feedback = error.message
       })
     },
     forgotPassword() {
       this.forgot_PW = !this.forgot_PW
-      console.log(this.forgot_PW)
     },
     resetPassword() {
       firebase.auth().sendPasswordResetEmail(this.resetEmail)

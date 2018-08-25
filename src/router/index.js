@@ -18,7 +18,7 @@ const router = new Router({
       beforeEnter: (to, from, next) => {
         const isAuthenticated = firebase.auth().currentUser
         if(isAuthenticated) {
-          next('EditProfile')
+          next('Profile')
         } else {
           next()
         }
