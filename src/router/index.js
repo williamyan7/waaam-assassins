@@ -7,7 +7,12 @@ import Signup from '@/components/Signup'
 import VerifyEmail from '@/components/VerifyEmail'
 import About from '@/components/About'
 import Profile from '@/components/Profile'
+import Team from '@/components/Team'
+import Targets from '@/components/Targets'
+import Leaderboard from '@/components/Leaderboard'
+import DangerList from '@/components/DangerList'
 import Admin from '@/components/Admin'
+import SubmitKill from '@/components/SubmitKill'
 
 Vue.use(Router)
 
@@ -26,7 +31,7 @@ const router = new Router({
     { path: '/login', name: 'Login', component: Login },
     { path: '/signup', name: 'Signup', component: Signup },
     { path: '/verifyemail', name: 'VerifyEmail', component: VerifyEmail },
-    { path: '/about', name: 'About', component: About },
+    { path: '/rules', name: 'About', component: About },
     { path: '/admin', name: 'Admin', component: Admin,
       beforeEnter: (to, from, next) => {
         var email = firebase.auth().currentUser.email
@@ -37,7 +42,12 @@ const router = new Router({
           next('/')
         }
       }},
-    { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true} }
+    { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true} },
+    { path: '/team', name: 'Team', component: Team, meta: { requiresAuth: true} },
+    { path: '/targets', name: 'Targets', component: Targets, meta: { requiresAuth: true} },
+    { path: '/leaderboard', name: 'Leaderboard', component: Leaderboard, meta: { requiresAuth: true} },
+    { path: '/dangerlist', name: 'DangerList', component: DangerList, meta: { requiresAuth: true} },
+    { path: '/submitkill', name: 'SubmitKill', component: SubmitKill, meta: { requiresAuth: true} }
   ]
 })
 

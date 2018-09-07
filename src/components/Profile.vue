@@ -120,7 +120,8 @@ export default {
         self.hasImage = true
         firebase.firestore().collection('users').doc(firebase.auth().currentUser.email)
         .update({
-          uploadedPhoto: true
+          uploadedPhoto: true,
+          imageURL: url
         })
         }).catch(err => console.log(err))
       })
@@ -131,7 +132,8 @@ export default {
       .then(() => console.log('delete successful')).catch(err => console.log(err))
       firebase.firestore().collection('users').doc(firebase.auth().currentUser.email)
       .update({
-        uploadedPhoto: false
+        uploadedPhoto: false,
+        imageURL: null
       })
     }
   }

@@ -1,0 +1,83 @@
+<template lang="html">
+  <v-layout wrap>
+    <v-flex class="text-xs-center" mt-5 wrap>
+      <h2> Team </h2>
+        <div
+        v-for="member in team"
+        :key="member.email">
+          <v-card width="80%" justify-center>
+            <v-card-title class="min-width">
+              <v-flex xs6>
+                <img :src="member.imageURL" class="profilePicture">
+              </v-flex>
+              <v-flex xs6>
+              <table>
+                <tbody>
+                  <tr>
+                    <td>Name</td>
+                    <td>{{ member.name }}</td>
+                  </tr>
+                  <tr>
+                    <td>Code Name</td>
+                    <td>{{ member.code_name }}</td>
+                  </tr>
+                  <tr>
+                    <td>Email</td>
+                    <td>{{ member.email }}</td>
+                  </tr>
+                  <tr>
+                    <td>Dynasty</td>
+                    <td>{{ member.dynasty }}</td>
+                  </tr>
+                  <tr>
+                    <td>Status</td>
+                    <td>{{ member.status }}</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </v-flex>
+            </v-card-title>
+          </v-card>
+          <br>
+          </div>
+        </v-flex>
+    </v-layout>
+</template>
+
+<script>
+import firebase from 'firebase'
+export default {
+  data() {
+    return {
+      team: []
+    }
+  },
+  created() {
+    var self = this
+    firebase.firestore().collection('users').where('team_number', '==', 1).get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        self.team.push({name: doc.data().name, code_name: doc.data().code_name,
+          email: doc.data().email, dynasty: doc.data().dynasty,
+          status: doc.data().status, imageURL: doc.data().imageURL})
+      })
+    })
+    console.log(self.team)
+  }
+}
+</script>
+
+<style lang="css">
+.card {
+  max-width: 700px;
+  margin: auto;
+}
+.profilePicture {
+  max-height: 300px;
+  max-width: 300px;
+}
+.min-width {
+  min-width: 500px;
+}
+</style>
