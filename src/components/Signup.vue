@@ -54,7 +54,7 @@ export default {
       dynasty: null,
       existing_code_names: [],
       kill_code: 'Generated when game starts',
-      dynasties: ['Jade', 'Pearl', 'Monkey', 'Panda']
+      dynasties: ['Fire', 'Water', 'Earth', 'Air']
     }
   },
   methods: {
