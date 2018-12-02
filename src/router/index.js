@@ -11,7 +11,8 @@ import Team from '@/components/Team'
 import Targets from '@/components/Targets'
 import Leaderboard from '@/components/Leaderboard'
 import DangerList from '@/components/DangerList'
-import Admin from '@/components/Admin'
+import AdminDashboard from '@/components/AdminDashboard'
+import AdminSetup from '@/components/AdminSetup'
 import SubmitKill from '@/components/SubmitKill'
 
 Vue.use(Router)
@@ -32,7 +33,17 @@ const router = new Router({
     { path: '/signup', name: 'Signup', component: Signup },
     { path: '/verifyemail', name: 'VerifyEmail', component: VerifyEmail },
     { path: '/rules', name: 'About', component: About },
-    { path: '/admin', name: 'Admin', component: Admin,
+    { path: '/admin-setup', name: 'Admin Setup', component: AdminSetup,
+      beforeEnter: (to, from, next) => {
+        var email = firebase.auth().currentUser.email
+        const isAdmin = (email == 'williamyan7@gmail.com' || email == 'willyan@wharton.upenn.edu' || 'linyex@wharton.upenn.edu' )
+        if(isAdmin) {
+          next()
+        } else {
+          next('/')
+        }
+      }},
+    { path: '/admin-dashboard', name: 'Admin Dashboard', component: AdminDashboard,
       beforeEnter: (to, from, next) => {
         var email = firebase.auth().currentUser.email
         const isAdmin = (email == 'williamyan7@gmail.com' || email == 'willyan@wharton.upenn.edu' )

@@ -68,23 +68,24 @@ export default {
           if(self.admin_emails.indexOf(this.user.email) > -1) {
             return [
               { title: 'Rules', path: '/rules', icon: 'find_in_page' },
-              { title: 'Admin', path: '/admin', icon: 'person' },
-              { title: 'Profile', path: '/profile', icon: 'person' },
+              { title: 'Admin', path: '/admin-dashboard'},
+              { title: 'Setup', path: '/admin-setup'},
               { title: 'Team', path: '/team', icon: 'group'},
               { title: 'Targets', path: '/targets', icon: 'highlight_off'},
               { title: 'Submit Kill', path: '/submitkill', icon: 'highlight_off'},
               { title: 'Danger List', path: '/dangerlist', icon: 'mood_bad'},
-              { title: 'Leaderboard', path: '/leaderboard', icon: 'whatshot'}
+              { title: 'Leaderboard', path: '/leaderboard', icon: 'whatshot'},
+              { path: '/profile', icon: 'person' }
             ]
           } else {
               return [
                 { title: 'Rules', path: '/rules', icon: 'find_in_page' },
-                { title: 'Profile', path: '/profile', icon: 'person' },
                 { title: 'Team', path: '/team', icon: 'group'},
                 { title: 'Targets', path: '/targets', icon: 'highlight_off'},
                 { title: 'Submit Kill', path: '/submitkill', icon: 'highlight_off'},
                 { title: 'Danger List', path: '/dangerlist', icon: 'mood_bad'},
-                { title: 'Leaderboard', path: '/leaderboard', icon: 'whatshot'}
+                { title: 'Leaderboard', path: '/leaderboard', icon: 'whatshot'},
+                { path: '/profile', icon: 'person' }
               ]
             }
         } else {
