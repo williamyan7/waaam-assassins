@@ -1,5 +1,5 @@
 <template lang="html">
-  <div class="admin center card-panel">
+  <div class="admin card-panel">
     <h2>Admin page</h2>
     <button class="btn red" @click="generateKillCodeList">Generate Kill Codes</button>
     <br><br><button class="btn red" @click="clearFakeUsers">Clear Fakes</button>
@@ -15,7 +15,8 @@
     <button class="btn red" @click="pushTeamAssignmentToCloud">Update Teams</button>
     <br><button class="btn red" @click="createTeamObjects">Create Team Objects</button>
     <button class="btn red" @click="deleteTeams">Delete Team Objects</button>
-    <br><button class="btn red" @click="assignInitialTargets">Assign Initial Targets</button>
+    <br><br><button class="btn red" @click="assignInitialTargets">Assign Initial Targets</button>
+    <button class="btn red" @click="assignKillCodes">Assign Kill Codes</button>
   </div>
 </template>
 
@@ -160,7 +161,8 @@ export default {
         firebase.firestore().collection('users').doc(fake_email).set({
           email: fake_email,
           dynasty: "Fire",
-          team_number: null
+          team_number: null,
+          kill_code: "Generated when game starts"
         })
       }
       for(var i=0; i<this.fake_water; i++){
@@ -168,7 +170,8 @@ export default {
         firebase.firestore().collection('users').doc(fake_email).set({
           email: fake_email,
           dynasty: "Water",
-          team_number: null
+          team_number: null,
+          kill_code: "Generated when game starts"
         })
       }
       for(var i=0; i<this.fake_earth; i++){
@@ -176,7 +179,8 @@ export default {
         firebase.firestore().collection('users').doc(fake_email).set({
           email: fake_email,
           dynasty: "Earth",
-          team_number: null
+          team_number: null,
+          kill_code: "Generated when game starts"
         })
       }
       for(var i=0; i<this.fake_air; i++){
@@ -184,7 +188,8 @@ export default {
         firebase.firestore().collection('users').doc(fake_email).set({
           email: fake_email,
           dynasty: "Air",
-          team_number: null
+          team_number: null,
+          kill_code: "Generated when game starts"
         })
       }
     },
@@ -244,6 +249,30 @@ export default {
           firebase.firestore().collection('team').doc(id).delete()
         })
       })
+    },
+    assignKillCodes() {
+      //Pull kill codes into array
+      var kill_codes = []
+      firebase.firestore().collection('kill_codes').doc('existing_kill_codes').get()
+      .then(doc => {
+        kill_codes = doc.data().codes_list
+      })
+      //Assign a kill code to each user
+      .then(
+        firebase.firestore().collection('users').get()
+        .then(snapshot => {
+          var i = 0
+          console.log(i)
+          snapshot.forEach(doc => {
+            var kill_code = kill_codes[i]
+            console.log(kill_code)
+            firebase.firestore().collection('users').doc(doc.data().email).update({
+              kill_code: kill_code
+            })
+            i++
+          })
+        })
+      )
     },
     updateAcceptedKillCodes() {
       //updates the team objects in Firebase with acceptable kill codes

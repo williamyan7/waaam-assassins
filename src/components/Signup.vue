@@ -65,12 +65,13 @@ export default {
       if(this.name && this.email && this.password && this.code_name){
         if(code_name_available) {
           if(this.password == this.confirmPassword) {
-
             firebase.auth().createUserWithEmailAndPassword(this.email,this.password)
+            // .then(() => {
+            //   this.generateKillCode()
+            //   console.log(this.kill_code)
+            // })
             .then(() => {
-              this.generateKillCode()
-            })
-            .then(() => {
+              console.log(this.kill_code)
               ref.doc(this.email).set({
                 name: this.name,
                 email: this.email,
@@ -81,7 +82,7 @@ export default {
                 target_team_number: null,
                 num_kills: 0,
                 days_since_last_kill: 0,
-                kill_code: self.kill_code,
+                kill_code: this.kill_code,
                 status: 'Alive'
               })
             })
@@ -117,19 +118,21 @@ export default {
         })
       })
     },
-    generateKillCode(){
-      var kill_codes = []
-      firebase.firestore().collection('kill_codes').doc('existing_kill_codes').get()
-      .then(doc => {
-        kill_codes = doc.data().codes_list
-        this.kill_code = kill_codes.pop()
-        firebase.firestore().collection('kill_codes').doc('existing_kill_codes')
-          .set({codes_list: kill_codes})
-      })
-      return new Promise((res,rej) => {
-        setTimeout(() => res(), 1000)
-      })
-    },
+    // generateKillCode(){
+    //   var kill_codes = []
+    //   var self = this
+    //   firebase.firestore().collection('kill_codes').doc('existing_kill_codes').get()
+    //   .then(doc => {
+    //     kill_codes = doc.data().codes_list
+    //     self.kill_code = kill_codes.pop()
+    //     console.log(self.kill_code)
+    //     firebase.firestore().collection('kill_codes').doc('existing_kill_codes')
+    //       .set({codes_list: kill_codes})
+    //   })
+    //   return new Promise((res,rej) => {
+    //     setTimeout(() => res(), 1000)
+    //   })
+    // },
     checkCodeNameAvailability() {
       return !(this.existing_code_names.indexOf(this.code_name.toLowerCase()) > -1)
     }
