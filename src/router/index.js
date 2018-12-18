@@ -46,7 +46,7 @@ const router = new Router({
     { path: '/admin-dashboard', name: 'Admin Dashboard', component: AdminDashboard,
       beforeEnter: (to, from, next) => {
         var email = firebase.auth().currentUser.email
-        const isAdmin = (email == 'williamyan7@gmail.com' || email == 'willyan@wharton.upenn.edu' )
+        const isAdmin = (email == 'williamyan7@gmail.com' || email == 'willyan@wharton.upenn.edu' || 'linyex@wharton.upenn.edu' )
         if(isAdmin) {
           next()
         } else {
