@@ -14,12 +14,12 @@ Vue.use(Vuetify)
 Vue.use(VueFire)
 
 var config = {
-    apiKey: "AIzaSyCpZz6e-USo53bFDsIWuKhXpbPbaTNaJeA",
-    authDomain: "waaam-assassins.firebaseapp.com",
-    databaseURL: "https://waaam-assassins.firebaseio.com",
-    projectId: "waaam-assassins",
-    storageBucket: "waaam-assassins.appspot.com",
-    messagingSenderId: "734206095654"
+    apiKey: "AIzaSyCSDRCUCjtctL82eSWO3055t5lg_9X-AGw",
+    authDomain: "waaam-assassins-e835e.firebaseapp.com",
+    databaseURL: "https://waaam-assassins-e835e.firebaseio.com",
+    projectId: "waaam-assassins-e835e",
+    storageBucket: "waaam-assassins-e835e.appspot.com",
+    messagingSenderId: "574431317107"
   }
 
 const firebaseApp = firebase.initializeApp(config);

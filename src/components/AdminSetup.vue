@@ -1,15 +1,15 @@
 <template lang="html">
   <div class="admin card-panel">
     <h2>Admin page</h2>
-    <!-- <button class="btn red" @click="generateKillCodeList">Generate Kill Codes</button> -->
-    <!-- <br><br><button class="btn red" @click="clearFakeUsers">Clear Fakes</button>
+    <!-- <button class="btn red" @click="generateKillCodeList">Generate Kill Codes</button>
+    <br><br><button class="btn red" @click="clearFakeUsers">Clear Fakes</button>
     <br><br>Enter number of fake users per dynasty:
     <input class="inputField" type="text" name="fakeFire" v-model="fake_fire"></input>
     <input class="inputField" type="text" name="fakeWater" v-model="fake_water"></input>
     <input class="inputField" type="text" name="fakeEarth" v-model="fake_earth"></input>
     <input class="inputField" type="text" name="fakeAir" v-model="fake_air"></input>
-    <br><br><button class="btn red" @click="createFakeUsers">Create Fakes</button> -->
-    <!-- <br><button class="btn red" @click="separateByDynasty">Update Dynasties</button> -->
+    <br><br><button class="btn red" @click="createFakeUsers">Create Fakes</button>
+    <br><button class="btn red" @click="separateByDynasty">Update Dynasties</button> -->
     <h5>Current # Users by Dynasty (refresh page for most up to date)</h5>
     <table>
       <thead>
@@ -233,56 +233,71 @@ export default {
     },
     createTeamObjects() {
       //Loop for Fire dynasty
-      console.log(this.fire_teams)
-      for(var i=0; i<this.num_teams; i++) {
-        var team_num = (10+i).toString()
-        firebase.firestore().collection('teams').doc(team_num).set({
-          accepted_kill_codes: [],
-          dynasty: 'Fire',
-          status: 'Alive',
-          team_number: team_num,
-          target_team: null,
-          targeted_by_team: null,
-          users: this.fire_teams[i]
+      firebase.firestore().collection('test_teams').get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          var data = doc.data()
+          var id = data.team_number
+          firestore.firebase().collection('teams').doc(id.toString()).set({
+            accepted_kill_codes: data.accepted_kill_codes,
+            dynasty: data.dynasty,
+            status: data.status,
+            target_team: data.target_team,
+            targeted_by_team: data.targeted_by_team,
+            team_number: data.team_number,
+            users: data.users
+          })
         })
-      }
-      //Loop for water dynasty
-      for(var i=0; i<this.num_teams; i++) {
-        var team_num = (20+i).toString()
-        firebase.firestore().collection('teams').doc(team_num).set({
-          accepted_kill_codes: [],
-          dynasty: 'Water',
-          status: 'Alive',
-          team_number: team_num,
-          target_team: null,
-          targeted_by_team: null,
-          users: this.water_teams[i]
-        })
-      }
-      for(var i=0; i<this.num_teams; i++) {
-        var team_num = (30+i).toString()
-        firebase.firestore().collection('teams').doc(team_num).set({
-          accepted_kill_codes: [],
-          dynasty: 'Earth',
-          status: 'Alive',
-          team_number: team_num,
-          target_team: null,
-          targeted_by_team: null,
-          users: this.earth_teams[i]
-        })
-      }
-      for(var i=0; i<this.num_teams; i++) {
-        var team_num = (40+i).toString()
-        firebase.firestore().collection('teams').doc(team_num).set({
-          accepted_kill_codes: [],
-          dynasty: 'Air',
-          status: 'Alive',
-          team_number: team_num,
-          target_team: null,
-          targeted_by_team: null,
-          users: this.air_teams[i]
-        })
-      }
+      })
+      // for(var i=0; i<this.num_teams; i++) {
+      //   var team_num = (10+i).toString()
+      //   firebase.firestore().collection('teams').doc(team_num).set({
+      //     accepted_kill_codes: [],
+      //     dynasty: 'Fire',
+      //     status: 'Alive',
+      //     team_number: team_num,
+      //     target_team: null,
+      //     targeted_by_team: null,
+      //     users: this.fire_teams[i]
+      //   })
+      // }
+      // //Loop for water dynasty
+      // for(var i=0; i<this.num_teams; i++) {
+      //   var team_num = (20+i).toString()
+      //   firebase.firestore().collection('teams').doc(team_num).set({
+      //     accepted_kill_codes: [],
+      //     dynasty: 'Water',
+      //     status: 'Alive',
+      //     team_number: team_num,
+      //     target_team: null,
+      //     targeted_by_team: null,
+      //     users: this.water_teams[i]
+      //   })
+      // }
+      // for(var i=0; i<this.num_teams; i++) {
+      //   var team_num = (30+i).toString()
+      //   firebase.firestore().collection('teams').doc(team_num).set({
+      //     accepted_kill_codes: [],
+      //     dynasty: 'Earth',
+      //     status: 'Alive',
+      //     team_number: team_num,
+      //     target_team: null,
+      //     targeted_by_team: null,
+      //     users: this.earth_teams[i]
+      //   })
+      // }
+      // for(var i=0; i<this.num_teams; i++) {
+      //   var team_num = (40+i).toString()
+      //   firebase.firestore().collection('teams').doc(team_num).set({
+      //     accepted_kill_codes: [],
+      //     dynasty: 'Air',
+      //     status: 'Alive',
+      //     team_number: team_num,
+      //     target_team: null,
+      //     targeted_by_team: null,
+      //     users: this.air_teams[i]
+      //   })
+      // }
     },
     createTestTeamObjects() {
       //Loop for Fire dynasty
