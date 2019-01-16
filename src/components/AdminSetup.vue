@@ -1,6 +1,7 @@
 <template lang="html">
   <div class="admin card-panel">
-    <h2>Admin page</h2>
+    <h2>Game Setup</h2>
+    <h4>Make sure to refresh page after each action to ensure most updated data</h4>
     <!-- <button class="btn red" @click="generateKillCodeList">Generate Kill Codes</button>
     <br><br><button class="btn red" @click="clearFakeUsers">Clear Fakes</button>
     <br><br>Enter number of fake users per dynasty:
@@ -29,7 +30,7 @@
       </tbody>
     </table>
     <br><br>Enter number of teams per dynasty: <input class="inputField" type="text" name="numTeams" v-model="num_teams"></input>
-    <button class="btn red" @click="groupTeams">Create Test Teams</button>
+    <button class="btn red" @click="createTestTeams">Create Test Teams</button>
     <button class="btn red" @click="deleteTestTeams">Delete Test Teams</button>
     <h5>Current Team Setup</h5>
     <table>
@@ -50,11 +51,12 @@
         </tr>
       </tbody>
     </table>
-    <br>
-    <button class="btn red" @click="pushTeamAssignmentToCloud">Finalize Teams</button>
+    <br><br>
+    <button class="btn red" @click="assignInitialTargets">Assign Initial Targets</button><br><br>
+    <button class="btn blue" @click="pushTeamAssignmentToCloud">Finalize Teams</button>
     <button class="btn red" @click="deleteTeams">Delete Team Objects</button>
-    <br><br><button class="btn red" @click="assignInitialTargets">Assign Initial Targets</button>
     <button class="btn red" @click="assignKillCodes">Assign Kill Codes</button>
+    <button class="btn red" @click="updateAllAcceptedKillCodes">Update Accepted Kill Codes</button>
   </div>
 </template>
 
@@ -80,12 +82,16 @@ export default {
       fake_fire: "Fire",
       fake_water: "Water",
       fake_earth: "Earth",
-      fake_air: "Air"
+      fake_air: "Air",
+      HIGHEST_TEAM_NUM: 0
     }
   },
   created () {
+    //Logic here makes it so that the tables are up to date with each refresh
     var self = this
+    //Calls method to get the most up to date dynasty split based on current users
     this.separateByDynasty()
+    //Counts number of users in each dynasty based on what's in Firebase
     firebase.firestore().collection('dynasties').doc('Fire').get()
     .then(doc => {
       self.num_fire = doc.data().users.length
@@ -108,21 +114,22 @@ export default {
       })
     })
     .then(() => {
+      //Pulls the test teams into an array to display in bottom table
       firebase.firestore().collection('test_teams').get()
       .then(snapshot => {
         snapshot.forEach(doc => {
           self.all_teams.push(doc.data())
         })
+      }).then(() => {
+        self.HIGHEST_TEAM_NUM = self.all_teams[self.all_teams.length-1].team_number
       })
     })
   },
   methods: {
-    assignTeams() {
-      this.separateByDynasty()
-      this.groupTeams()
-    },
+    //Method called when page is refreshed
     separateByDynasty() {
       var self = this
+      //Goes through users and pushes them into 4 arrays based on their dynasty
       firebase.firestore().collection('users').get()
       .then(snapshot => {
         snapshot.forEach(doc => {
@@ -137,11 +144,7 @@ export default {
           }
         })
       }).then(() => {
-        self.shuffleArray(self.fire_dynasty)
-        self.shuffleArray(self.water_dynasty)
-        self.shuffleArray(self.air_dynasty)
-        self.shuffleArray(self.earth_dynasty)
-      }).then(() => {
+        //Update these dynasty arrays in Firebase to make them persistent in the cloud
         firebase.firestore().collection('dynasties').doc('Air').update({
           users: self.air_dynasty
         })
@@ -159,13 +162,69 @@ export default {
         })
       })
     },
-    groupTeams() {
+    //Method called when Create Test Teams button is pressed
+    createTestTeams() {
+      //Based on the dynasty arrays, assigns team numbers to each user
       this.groupTeamsInDynasty(this.fire_dynasty, this.fire_teams)
       this.groupTeamsInDynasty(this.water_dynasty, this.water_teams)
       this.groupTeamsInDynasty(this.earth_dynasty, this.earth_teams)
       this.groupTeamsInDynasty(this.air_dynasty, this.air_teams)
+      //Pushes those assignments into cloud on the test side
       this.createTestTeamObjects()
     },
+    createTestTeamObjects() {
+      //Loop for Fire dynasty
+      for(var i=0; i<this.num_teams; i++) {
+        var team_num = (10+i).toString()
+        firebase.firestore().collection('test_teams').doc(team_num).set({
+          accepted_kill_codes: [],
+          dynasty: 'Fire',
+          status: 'Alive',
+          team_number: 10+i,
+          target_team: null,
+          targeted_by_team: null,
+          users: this.fire_teams[i]
+        })
+      }
+      //Loop for water dynasty
+      for(var i=0; i<this.num_teams; i++) {
+        var team_num = (20+i).toString()
+        firebase.firestore().collection('test_teams').doc(team_num).set({
+          accepted_kill_codes: [],
+          dynasty: 'Water',
+          status: 'Alive',
+          team_number: 20+i,
+          target_team: null,
+          targeted_by_team: null,
+          users: this.water_teams[i]
+        })
+      }
+      for(var i=0; i<this.num_teams; i++) {
+        var team_num = (30+i).toString()
+        firebase.firestore().collection('test_teams').doc(team_num).set({
+          accepted_kill_codes: [],
+          dynasty: 'Earth',
+          status: 'Alive',
+          team_number: 30+i,
+          target_team: null,
+          targeted_by_team: null,
+          users: this.earth_teams[i]
+        })
+      }
+      for(var i=0; i<this.num_teams; i++) {
+        var team_num = (40+i).toString()
+        firebase.firestore().collection('test_teams').doc(team_num).set({
+          accepted_kill_codes: [],
+          dynasty: 'Air',
+          status: 'Alive',
+          team_number: 40+i,
+          target_team: null,
+          targeted_by_team: null,
+          users: this.air_teams[i]
+        })
+      }
+    },
+    //Helper method to create test teams
     groupTeamsInDynasty(dynasty_array, dynasty_teams) {
       //dynasty_array is an unsorted list of all users in the dynasty
       //dynasty_teams is an array where each index represents a team object
@@ -179,6 +238,7 @@ export default {
         dynasty_teams[i % this.num_teams] = current_team
       }
     },
+    //Helper method to determine dynasty factor
     determineDynastyFactor(dynasty_array) {
       if(dynasty_array == this.fire_dynasty) {
         return 10
@@ -190,35 +250,48 @@ export default {
         return 40
       }
     },
+    //Called when Finalize Teams button is pressed
     pushTeamAssignmentToCloud() {
       console.log('pushing')
-      var users = firebase.firestore().collection('users')
-      //Loop through all fire dynasty users and update team
-      for(var i=0; i<this.fire_dynasty.length; i++) {
-        var ref = users.doc(this.fire_dynasty[i].email)
-        ref.update({
-          team_number: this.fire_dynasty[i].team_number
+      firebase.firestore().collection('test_teams').get().
+      then(snapshot => {
+        //Updates team number for each user in the user collection
+        //Note: this does not update the team number for the users in the team object, but that's ok
+        //since that array is just for checking how many users are in each team, most up to date
+        //user info is in users collection
+        snapshot.forEach(doc => {
+          var curr_team_users = doc.data().users
+          var curr_team_number = doc.data().team_number
+          for(var i=0; i<curr_team_users.length; i++){
+            var curr_user_email = curr_team_users[i].email
+            firebase.firestore().collection('users').doc(curr_user_email).update({
+              team_number: curr_team_number
+            })
+          }
         })
-      }
-      for(var i=0; i<this.water_dynasty.length; i++) {
-        var ref = users.doc(this.water_dynasty[i].email)
-        ref.update({
-          team_number: this.water_dynasty[i].team_number
+      }).then(() => {
+        this.createTeamObjects()
+      })
+    },
+    createTeamObjects() {
+      //Loop for Fire dynasty
+      //Copies the test teams objects over to the teams collection, thus finalizing it
+      firebase.firestore().collection('test_teams').get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          var data = doc.data()
+          var id = data.team_number
+          firebase.firestore().collection('teams').doc(id.toString()).set({
+            accepted_kill_codes: data.accepted_kill_codes,
+            dynasty: data.dynasty,
+            status: data.status,
+            target_team: data.target_team,
+            targeted_by_team: data.targeted_by_team,
+            team_number: data.team_number,
+            users: data.users
+          })
         })
-      }
-      for(var i=0; i<this.earth_dynasty.length; i++) {
-        var ref = users.doc(this.earth_dynasty[i].email)
-        ref.update({
-          team_number: this.earth_dynasty[i].team_number
-        })
-      }
-      for(var i=0; i<this.air_dynasty.length; i++) {
-        var ref = users.doc(this.air_dynasty[i].email)
-        ref.update({
-          team_number: this.air_dynasty[i].team_number
-        })
-      }
-      this.createTeamObjects()
+      })
     },
     clearFakeUsers() {
       firebase.firestore().collection('users').get()
@@ -230,126 +303,6 @@ export default {
           }
         })
       })
-    },
-    createTeamObjects() {
-      //Loop for Fire dynasty
-      firebase.firestore().collection('test_teams').get()
-      .then(snapshot => {
-        snapshot.forEach(doc => {
-          var data = doc.data()
-          var id = data.team_number
-          firestore.firebase().collection('teams').doc(id.toString()).set({
-            accepted_kill_codes: data.accepted_kill_codes,
-            dynasty: data.dynasty,
-            status: data.status,
-            target_team: data.target_team,
-            targeted_by_team: data.targeted_by_team,
-            team_number: data.team_number,
-            users: data.users
-          })
-        })
-      })
-      // for(var i=0; i<this.num_teams; i++) {
-      //   var team_num = (10+i).toString()
-      //   firebase.firestore().collection('teams').doc(team_num).set({
-      //     accepted_kill_codes: [],
-      //     dynasty: 'Fire',
-      //     status: 'Alive',
-      //     team_number: team_num,
-      //     target_team: null,
-      //     targeted_by_team: null,
-      //     users: this.fire_teams[i]
-      //   })
-      // }
-      // //Loop for water dynasty
-      // for(var i=0; i<this.num_teams; i++) {
-      //   var team_num = (20+i).toString()
-      //   firebase.firestore().collection('teams').doc(team_num).set({
-      //     accepted_kill_codes: [],
-      //     dynasty: 'Water',
-      //     status: 'Alive',
-      //     team_number: team_num,
-      //     target_team: null,
-      //     targeted_by_team: null,
-      //     users: this.water_teams[i]
-      //   })
-      // }
-      // for(var i=0; i<this.num_teams; i++) {
-      //   var team_num = (30+i).toString()
-      //   firebase.firestore().collection('teams').doc(team_num).set({
-      //     accepted_kill_codes: [],
-      //     dynasty: 'Earth',
-      //     status: 'Alive',
-      //     team_number: team_num,
-      //     target_team: null,
-      //     targeted_by_team: null,
-      //     users: this.earth_teams[i]
-      //   })
-      // }
-      // for(var i=0; i<this.num_teams; i++) {
-      //   var team_num = (40+i).toString()
-      //   firebase.firestore().collection('teams').doc(team_num).set({
-      //     accepted_kill_codes: [],
-      //     dynasty: 'Air',
-      //     status: 'Alive',
-      //     team_number: team_num,
-      //     target_team: null,
-      //     targeted_by_team: null,
-      //     users: this.air_teams[i]
-      //   })
-      // }
-    },
-    createTestTeamObjects() {
-      //Loop for Fire dynasty
-      for(var i=0; i<this.num_teams; i++) {
-        var team_num = (10+i).toString()
-        firebase.firestore().collection('test_teams').doc(team_num).set({
-          accepted_kill_codes: [],
-          dynasty: 'Fire',
-          status: 'Alive',
-          team_number: team_num,
-          target_team: null,
-          targeted_by_team: null,
-          users: this.fire_teams[i]
-        })
-      }
-      //Loop for water dynasty
-      for(var i=0; i<this.num_teams; i++) {
-        var team_num = (20+i).toString()
-        firebase.firestore().collection('test_teams').doc(team_num).set({
-          accepted_kill_codes: [],
-          dynasty: 'Water',
-          status: 'Alive',
-          team_number: team_num,
-          target_team: null,
-          targeted_by_team: null,
-          users: this.water_teams[i]
-        })
-      }
-      for(var i=0; i<this.num_teams; i++) {
-        var team_num = (30+i).toString()
-        firebase.firestore().collection('test_teams').doc(team_num).set({
-          accepted_kill_codes: [],
-          dynasty: 'Earth',
-          status: 'Alive',
-          team_number: team_num,
-          target_team: null,
-          targeted_by_team: null,
-          users: this.earth_teams[i]
-        })
-      }
-      for(var i=0; i<this.num_teams; i++) {
-        var team_num = (40+i).toString()
-        firebase.firestore().collection('test_teams').doc(team_num).set({
-          accepted_kill_codes: [],
-          dynasty: 'Air',
-          status: 'Alive',
-          team_number: team_num,
-          target_team: null,
-          targeted_by_team: null,
-          users: this.air_teams[i]
-        })
-      }
     },
     assignKillCodes() {
       //Pull kill codes into array
@@ -363,10 +316,8 @@ export default {
         firebase.firestore().collection('users').get()
         .then(snapshot => {
           var i = 0
-          console.log(i)
           snapshot.forEach(doc => {
             var kill_code = kill_codes[i]
-            console.log(kill_code)
             firebase.firestore().collection('users').doc(doc.data().email).update({
               kill_code: kill_code
             })
@@ -376,21 +327,29 @@ export default {
       )
     },
     updateAllAcceptedKillCodes() {
-
+      for(var i=0; i<this.all_teams.length; i++) {
+        this.updateAcceptedKillCodes(this.all_teams[i].team_number)
+      }
     },
     updateAcceptedKillCodes(current_team_number) {
       //updates the team objects in Firebase with acceptable kill codes
       //Acceptable kill codes is an array made up of:
       // - Kill codes from target team
       // - Kill codes from targeted by team
+      console.log('updating')
       var valid_kill_codes = []
       var target_team_num = null
       var targeted_by_team_num = null
-      firebase.firestore().collection('teams').doc(current_team_number.toString()).get()
+      var team_ref = firebase.firestore().collection('teams').doc(current_team_number.toString())
+      // Pulls the associated target team and targeted by team numbers based on current team number
+      team_ref.get()
       .then(doc => {
         target_team_num = doc.data().target_team
         targeted_by_team_num = doc.data().targeted_by_team
+        console.log(target_team_num + " " + targeted_by_team_num)
       }).then(() => {
+        //Scrolls through users to check if user's team number is either the target or targetd by team number
+        //If it is, add that user's kill code to valid kill code array
         firebase.firestore().collection('users').get()
         .then(snapshot => {
           snapshot.forEach(doc => {
@@ -399,43 +358,49 @@ export default {
               valid_kill_codes.push(doc.data().kill_code)
             }
           })
+        }).then(() => {
+          team_ref.update({
+            accepted_kill_codes: valid_kill_codes
+          })
         })
       })
     },
     assignInitialTargets() {
       var teams_array = []
-      firebase.firestore().collection('teams').get()
+      var self = this
+      firebase.firestore().collection('test_teams').get()
       .then(snapshot => {
         snapshot.forEach(doc => {
           //Assign target teams by checking dynasty
           var team_num = doc.data().team_number
           //make this editable from browser
-          var HIGHEST_TEAM_NUM = 42
           if(doc.data().dynasty == "Air") {
-            if(doc.data().team_number == HIGHEST_TEAM_NUM) {
-              firebase.firestore().collection('teams').doc(team_num.toString()).update({
+            if(doc.data().team_number == self.HIGHEST_TEAM_NUM) {
+              firebase.firestore().collection('test_teams').doc(team_num.toString()).update({
                 target_team: 10
               })
             } else {
-                firebase.firestore().collection('teams').doc(team_num.toString()).update({
+                firebase.firestore().collection('test_teams').doc(team_num.toString()).update({
                   target_team: (team_num - 30 + 1)
                 })
               }
           } else {
-            firebase.firestore().collection('teams').doc(team_num.toString()).update({
+            firebase.firestore().collection('test_teams').doc(team_num.toString()).update({
               target_team: (parseInt(team_num,10) + 10)
             })
           }
         })
-      }).then(this.setTargetedTeam())
+      }).then(() => {
+        this.setTargetedTeam()
+      })
     },
     setTargetedTeam() {
-      firebase.firestore().collection('teams').get()
+      firebase.firestore().collection('test_teams').get()
       .then(snapshot => {
         snapshot.forEach(doc => {
           var current_team_num = doc.data().team_number
           var target_team_num = doc.data().target_team
-          firebase.firestore().collection('teams').doc(target_team_num.toString()).update({
+          firebase.firestore().collection('test_teams').doc(target_team_num.toString()).update({
             targeted_by_team: current_team_num
           })
         })
