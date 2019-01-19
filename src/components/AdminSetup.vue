@@ -1,7 +1,14 @@
 <template lang="html">
   <div class="admin card-panel">
     <h2>Game Setup</h2>
-    <h4>Make sure to refresh page after each action to ensure most updated data</h4>
+    <h4>MAKE SURE TO REFRESH AFTER EACH ACTION</h4>
+    <!-- How to use the page (order of buttons to press):
+    1. Assign kill codes -> Refresh button
+    2. Create Test Teams -> REFRESH THE PAGE
+    3. Check to make sure teams look good in table
+    4. Assign Initial Targets -> REFRESH THE PAGE
+    5. Check to make sure team assignments look good in table
+    6. Finalize Teams -->
     <!-- <button class="btn red" @click="generateKillCodeList">Generate Kill Codes</button>
     <br><br><button class="btn red" @click="clearFakeUsers">Clear Fakes</button>
     <br><br>Enter number of fake users per dynasty:
@@ -9,8 +16,7 @@
     <input class="inputField" type="text" name="fakeWater" v-model="fake_water"></input>
     <input class="inputField" type="text" name="fakeEarth" v-model="fake_earth"></input>
     <input class="inputField" type="text" name="fakeAir" v-model="fake_air"></input>
-    <br><br><button class="btn red" @click="createFakeUsers">Create Fakes</button>
-    <br><button class="btn red" @click="separateByDynasty">Update Dynasties</button> -->
+    <br><br><button class="btn red" @click="createFakeUsers">Create Fakes</button> -->
     <h5>Current # Users by Dynasty (refresh page for most up to date)</h5>
     <table>
       <thead>
@@ -29,6 +35,9 @@
         </tr>
       </tbody>
     </table>
+    <br>
+    <button class="btn red" @click="assignKillCodes">Assign Kill Codes</button>
+    <button class="btn green" @click="separateByDynasty">REFRESH</button>
     <br><br>Enter number of teams per dynasty: <input class="inputField" type="text" name="numTeams" v-model="num_teams"></input>
     <button class="btn red" @click="createTestTeams">Create Test Teams</button>
     <button class="btn red" @click="deleteTestTeams">Delete Test Teams</button>
@@ -55,8 +64,7 @@
     <button class="btn red" @click="assignInitialTargets">Assign Initial Targets</button><br><br>
     <button class="btn blue" @click="pushTeamAssignmentToCloud">Finalize Teams</button>
     <button class="btn red" @click="deleteTeams">Delete Team Objects</button>
-    <button class="btn red" @click="assignKillCodes">Assign Kill Codes</button>
-    <button class="btn red" @click="updateAllAcceptedKillCodes">Update Accepted Kill Codes</button>
+    <!-- <button class="btn red" @click="updateAllAcceptedKillCodes">Update Accepted Kill Codes</button> -->
   </div>
 </template>
 
@@ -126,10 +134,14 @@ export default {
     })
   },
   methods: {
-    //Method called when page is refreshed
+    //Method used to align local variables / arrays with cloud
     separateByDynasty() {
       var self = this
       //Goes through users and pushes them into 4 arrays based on their dynasty
+      self.fire_dynasty = []
+      self.water_dynasty = []
+      self.air_dynasty = []
+      self.earth_dynasty = []
       firebase.firestore().collection('users').get()
       .then(snapshot => {
         snapshot.forEach(doc => {
@@ -293,17 +305,6 @@ export default {
         })
       })
     },
-    clearFakeUsers() {
-      firebase.firestore().collection('users').get()
-      .then(snapshot => {
-        snapshot.forEach(doc => {
-          var email = doc.data().email
-          if(email.substr(email.length - 8) == "fake.com") {
-            firebase.firestore().collection('users').doc(email).delete()
-          }
-        })
-      })
-    },
     assignKillCodes() {
       //Pull kill codes into array
       var kill_codes = []
@@ -326,45 +327,45 @@ export default {
         })
       )
     },
-    updateAllAcceptedKillCodes() {
-      for(var i=0; i<this.all_teams.length; i++) {
-        this.updateAcceptedKillCodes(this.all_teams[i].team_number)
-      }
-    },
-    updateAcceptedKillCodes(current_team_number) {
-      //updates the team objects in Firebase with acceptable kill codes
-      //Acceptable kill codes is an array made up of:
-      // - Kill codes from target team
-      // - Kill codes from targeted by team
-      console.log('updating')
-      var valid_kill_codes = []
-      var target_team_num = null
-      var targeted_by_team_num = null
-      var team_ref = firebase.firestore().collection('teams').doc(current_team_number.toString())
-      // Pulls the associated target team and targeted by team numbers based on current team number
-      team_ref.get()
-      .then(doc => {
-        target_team_num = doc.data().target_team
-        targeted_by_team_num = doc.data().targeted_by_team
-        console.log(target_team_num + " " + targeted_by_team_num)
-      }).then(() => {
-        //Scrolls through users to check if user's team number is either the target or targetd by team number
-        //If it is, add that user's kill code to valid kill code array
-        firebase.firestore().collection('users').get()
-        .then(snapshot => {
-          snapshot.forEach(doc => {
-            var team_num = doc.data().team_number
-            if(team_num == target_team_num || team_num == targeted_by_team_num) {
-              valid_kill_codes.push(doc.data().kill_code)
-            }
-          })
-        }).then(() => {
-          team_ref.update({
-            accepted_kill_codes: valid_kill_codes
-          })
-        })
-      })
-    },
+    // updateAllAcceptedKillCodes() {
+    //   for(var i=0; i<this.all_teams.length; i++) {
+    //     this.updateAcceptedKillCodes(this.all_teams[i].team_number)
+    //   }
+    // },
+    // updateAcceptedKillCodes(current_team_number) {
+    //   //updates the team objects in Firebase with acceptable kill codes
+    //   //Acceptable kill codes is an array made up of:
+    //   // - Kill codes from target team
+    //   // - Kill codes from targeted by team
+    //   console.log('updating')
+    //   var valid_kill_codes = []
+    //   var target_team_num = null
+    //   var targeted_by_team_num = null
+    //   var team_ref = firebase.firestore().collection('teams').doc(current_team_number.toString())
+    //   // Pulls the associated target team and targeted by team numbers based on current team number
+    //   team_ref.get()
+    //   .then(doc => {
+    //     target_team_num = doc.data().target_team
+    //     targeted_by_team_num = doc.data().targeted_by_team
+    //     console.log(target_team_num + " " + targeted_by_team_num)
+    //   }).then(() => {
+    //     //Scrolls through users to check if user's team number is either the target or targetd by team number
+    //     //If it is, add that user's kill code to valid kill code array
+    //     firebase.firestore().collection('users').get()
+    //     .then(snapshot => {
+    //       snapshot.forEach(doc => {
+    //         var team_num = doc.data().team_number
+    //         if(team_num == target_team_num || team_num == targeted_by_team_num) {
+    //           valid_kill_codes.push(doc.data().kill_code)
+    //         }
+    //       })
+    //     }).then(() => {
+    //       team_ref.update({
+    //         accepted_kill_codes: valid_kill_codes
+    //       })
+    //     })
+    //   })
+    // },
     assignInitialTargets() {
       var teams_array = []
       var self = this
@@ -412,40 +413,63 @@ export default {
     createFakeUsers() {
       for(var i=0; i<this.fake_fire; i++){
         var fake_email = i + "_fire@fake.com"
+        var code_name = i + "Fire Fake"
         firebase.firestore().collection('users').doc(fake_email).set({
           email: fake_email,
           dynasty: "Fire",
           team_number: null,
-          kill_code: "Generated when game starts"
+          kill_code: "Generated when game starts",
+          code_name: code_name,
+          status: "Alive"
         })
       }
       for(var i=0; i<this.fake_water; i++){
         var fake_email = i + "_water@fake.com"
+        var code_name = i + "Water Fake"
         firebase.firestore().collection('users').doc(fake_email).set({
           email: fake_email,
           dynasty: "Water",
           team_number: null,
-          kill_code: "Generated when game starts"
+          kill_code: "Generated when game starts",
+          code_name: code_name,
+          status: "Alive"
         })
       }
       for(var i=0; i<this.fake_earth; i++){
         var fake_email = i + "_earth@fake.com"
+        var code_name = i + "Earth Fake"
         firebase.firestore().collection('users').doc(fake_email).set({
           email: fake_email,
           dynasty: "Earth",
           team_number: null,
-          kill_code: "Generated when game starts"
+          kill_code: "Generated when game starts",
+          code_name: code_name,
+          status: "Alive"
         })
       }
       for(var i=0; i<this.fake_air; i++){
         var fake_email = i + "_air@fake.com"
+        var code_name = i + "Air Fake"
         firebase.firestore().collection('users').doc(fake_email).set({
           email: fake_email,
           dynasty: "Air",
           team_number: null,
-          kill_code: "Generated when game starts"
+          kill_code: "Generated when game starts",
+          code_name: code_name,
+          status: "Alive"
         })
       }
+    },
+    clearFakeUsers() {
+      firebase.firestore().collection('users').get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          var email = doc.data().email
+          if(email.substr(email.length - 8) == "fake.com") {
+            firebase.firestore().collection('users').doc(email).delete()
+          }
+        })
+      })
     },
     generateKillCodeList(){
       var code_list = []
