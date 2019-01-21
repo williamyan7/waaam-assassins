@@ -286,7 +286,6 @@ export default {
       })
     },
     createTeamObjects() {
-      //Loop for Fire dynasty
       //Copies the test teams objects over to the teams collection, thus finalizing it
       firebase.firestore().collection('test_teams').get()
       .then(snapshot => {
@@ -298,6 +297,7 @@ export default {
             dynasty: data.dynasty,
             status: data.status,
             target_team: data.target_team,
+            original_target_team: null,
             targeted_by_team: data.targeted_by_team,
             team_number: data.team_number,
             users: data.users
@@ -327,45 +327,6 @@ export default {
         })
       )
     },
-    // updateAllAcceptedKillCodes() {
-    //   for(var i=0; i<this.all_teams.length; i++) {
-    //     this.updateAcceptedKillCodes(this.all_teams[i].team_number)
-    //   }
-    // },
-    // updateAcceptedKillCodes(current_team_number) {
-    //   //updates the team objects in Firebase with acceptable kill codes
-    //   //Acceptable kill codes is an array made up of:
-    //   // - Kill codes from target team
-    //   // - Kill codes from targeted by team
-    //   console.log('updating')
-    //   var valid_kill_codes = []
-    //   var target_team_num = null
-    //   var targeted_by_team_num = null
-    //   var team_ref = firebase.firestore().collection('teams').doc(current_team_number.toString())
-    //   // Pulls the associated target team and targeted by team numbers based on current team number
-    //   team_ref.get()
-    //   .then(doc => {
-    //     target_team_num = doc.data().target_team
-    //     targeted_by_team_num = doc.data().targeted_by_team
-    //     console.log(target_team_num + " " + targeted_by_team_num)
-    //   }).then(() => {
-    //     //Scrolls through users to check if user's team number is either the target or targetd by team number
-    //     //If it is, add that user's kill code to valid kill code array
-    //     firebase.firestore().collection('users').get()
-    //     .then(snapshot => {
-    //       snapshot.forEach(doc => {
-    //         var team_num = doc.data().team_number
-    //         if(team_num == target_team_num || team_num == targeted_by_team_num) {
-    //           valid_kill_codes.push(doc.data().kill_code)
-    //         }
-    //       })
-    //     }).then(() => {
-    //       team_ref.update({
-    //         accepted_kill_codes: valid_kill_codes
-    //       })
-    //     })
-    //   })
-    // },
     assignInitialTargets() {
       var teams_array = []
       var self = this

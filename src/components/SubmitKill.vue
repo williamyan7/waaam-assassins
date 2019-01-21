@@ -15,6 +15,7 @@
       <p class="green-text center" v-if="success_feedback">{{ success_feedback }}</p>
     </div>
     <button class="btn blue" @click="resetLastKill">Reset last kill</button>
+    <button class="btn blue" @click="reviveAll">Revive all</button>
   </div>
 </template>
 
@@ -148,6 +149,7 @@ export default {
       var killed_user___targeted_by_team_num = null //Team number of killed user's targeted by team number
       var killed_user___targeted_by_team_dynasty = null //Dynasty of killed user's targeted by team
       var team_targeting_circle = []
+      var original_target_value = 99999
       //Populate targeting circle array with team objects
       firebase.firestore().collection('teams').get()
       .then(snapshot => {
@@ -168,30 +170,48 @@ export default {
         var index___killed_user_team_targeted_by = team_targeting_circle.map(team => team.team_number).indexOf(killed_user___targeted_by_team_num)
         //Below variable represents the dynasty of the team that KILLED the dead team
         killed_user___targeted_by_team_dynasty = team_targeting_circle[index___killed_user_team_targeted_by].dynasty
+        //Target of team that was just killed
         var new_target_team_num = team_targeting_circle[index___killed_user_team].target_team
-        //Check to make sure next team is not same dynasty, if it is, move on to next
-        var same_dynasty = true
-        while(same_dynasty) {
-          var index___target_team = team_targeting_circle.map(team => team.team_number).indexOf(new_target_team_num)
-          var target_team_dynasty = team_targeting_circle[index___target_team].dynasty
-          if(target_team_dynasty == killed_user___targeted_by_team_dynasty) {
-            new_target_team_num = team_targeting_circle[index___target_team].target_team
-          } else {
-            same_dynasty = false
-            console.log('Found a non-match!')
+        firebase.firestore().collection('teams').doc(this.killed_user_team_num.toString()).get()
+        .then(doc => {
+          original_target_value = doc.data().original_target_team
+        })
+        .then(() => {
+          //Check to make sure next team is not same dynasty, if it is, move on to next
+          var same_dynasty = true
+          //If there is an original link, make team target that team
+          console.log(original_target_value)
+          if(original_target_value != null) {
+            console.log('reconnect the chain!')
+            var same_dynasty = false
+            new_target_team_num = original_target_value
           }
-        }
-      //Once target team is confirmed (nest then's)
-        firebase.firestore().collection('teams').doc(this.killed_user_team_num.toString()).update({
-          status: "Dead",
-          target_team: null,
-          targeted_by_team: null
-        })
-        firebase.firestore().collection('teams').doc(new_target_team_num.toString()).update({
-          targeted_by_team: killed_user___targeted_by_team_num
-        })
-        firebase.firestore().collection('teams').doc(killed_user___targeted_by_team_num.toString()).update({
-          target_team: new_target_team_num
+          while(same_dynasty) {
+            var index___target_team = team_targeting_circle.map(team => team.team_number).indexOf(new_target_team_num)
+            var target_team_dynasty = team_targeting_circle[index___target_team].dynasty
+            if(target_team_dynasty == killed_user___targeted_by_team_dynasty) {
+              //Update to maintain original link for when this team dies
+              firebase.firestore().collection('teams').doc(killed_user___targeted_by_team_num.toString()).update({
+                original_target_team: new_target_team_num
+              })
+              new_target_team_num = team_targeting_circle[index___target_team].target_team
+            } else {
+              same_dynasty = false
+              console.log('Found a non-match!')
+            }
+          }
+        //Once target team is confirmed (nest then's)
+          firebase.firestore().collection('teams').doc(this.killed_user_team_num.toString()).update({
+            status: "Dead",
+            target_team: null,
+            targeted_by_team: null
+          })
+          firebase.firestore().collection('teams').doc(new_target_team_num.toString()).update({
+            targeted_by_team: killed_user___targeted_by_team_num
+          })
+          firebase.firestore().collection('teams').doc(killed_user___targeted_by_team_num.toString()).update({
+            target_team: new_target_team_num
+          })
         })
       })
     },
@@ -199,13 +219,26 @@ export default {
     resetLastKill() {
       firebase.firestore().collection("teams").doc("41").update({
         targeted_by_team: 11,
-        target_team: 10
+        target_team: 12,
+        status: "Alive"
       })
       firebase.firestore().collection("teams").doc("11").update({
-        target_team: 41
-      })
-      firebase.firestore().collection("users").doc("1_air@fake.com").update({
+        target_team: 41,
+        targeted_by_team: 40,
         status: "Alive"
+      })
+      firebase.firestore().collection("users").doc("4_air@fake.com").update({
+        status: "Alive"
+      })
+    },
+    reviveAll() {
+      firebase.firestore().collection('users').get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          firebase.firestore().collection('users').doc(doc.data().email).update({
+            status: "Alive"
+          })
+        })
       })
     }
   }
