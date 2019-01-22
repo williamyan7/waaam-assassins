@@ -50,20 +50,28 @@ import firebase from 'firebase'
 export default {
   data() {
     return {
-      team: []
+      team: [],
+      team_number: null,
     }
   },
   created() {
-    var self = this
-    firebase.firestore().collection('users').where('team_number', '==', 1).get()
-    .then(snapshot => {
-      snapshot.forEach(doc => {
-        self.team.push({name: doc.data().name, code_name: doc.data().code_name,
-          email: doc.data().email, dynasty: doc.data().dynasty,
-          status: doc.data().status, imageURL: doc.data().imageURL})
+    this.populateTeam()
+  },
+  methods: {
+    populateTeam() {
+      firebase.firestore().collection('users').doc(firebase.auth().currentUser.email).get()
+      .then(doc => this.team_number = doc.data().team_number)
+      .then(() => {
+        firebase.firestore().collection('users').where('team_number', '==', this.team_number).get()
+        .then(snapshot => {
+          snapshot.forEach(doc => {
+            this.team.push({name: doc.data().name, code_name: doc.data().code_name,
+              email: doc.data().email, dynasty: doc.data().dynasty,
+              status: doc.data().status, imageURL: doc.data().imageURL})
+          })
+        })
       })
-    })
-    console.log(self.team)
+    }
   }
 }
 </script>

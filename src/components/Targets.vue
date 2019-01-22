@@ -21,11 +21,6 @@
                     <td>Dynasty</td>
                     <td>{{ target.dynasty }}</td>
                   </tr>
-                  <tr>
-                    <td>Status</td>
-                    <td>{{ target.status }}</td>
-                    <td></td>
-                  </tr>
                 </tbody>
               </table>
             </v-flex>
@@ -42,18 +37,36 @@ import firebase from 'firebase'
 export default {
   data() {
     return {
-      targets: []
+      targets: [],
+      team_number: null,
+      target_team_number: null
     }
   },
   created() {
-    var self = this
-    firebase.firestore().collection('users').where('team_number', '==', 1).get()
-    .then(snapshot => {
-      snapshot.forEach(doc => {
-        self.targets.push({ code_name: doc.data().code_name, dynasty: doc.data().dynasty,
-          status: doc.data().status, imageURL: doc.data().imageURL})
+    this.populateTargets()
+  },
+  methods: {
+    populateTargets() {
+      firebase.firestore().collection('users').doc(firebase.auth().currentUser.email).get()
+      .then(doc => this.team_number = doc.data().team_number)
+      .then(() => {
+        firebase.firestore().collection('teams').doc(this.team_number.toString()).get()
+        .then(doc => this.target_team_number = doc.data().target_team)
+        .then(() => {
+          firebase.firestore().collection('users').where('team_number', '==', this.target_team_number).get()
+          .then(snapshot => {
+            snapshot.forEach(doc => {
+              this.targets.push({
+                code_name: doc.data().code_name,
+                dynasty: doc.data().dynasty,
+                status: doc.data().status,
+                imageURL: doc.data().imageURL
+              })
+            })
+          })
+        })
       })
-    })
+    }
   }
 }
 </script>

@@ -381,7 +381,8 @@ export default {
           team_number: null,
           kill_code: "Generated when game starts",
           code_name: code_name,
-          status: "Alive"
+          status: "Alive",
+          num_kills: 0
         })
       }
       for(var i=0; i<this.fake_water; i++){
@@ -393,7 +394,8 @@ export default {
           team_number: null,
           kill_code: "Generated when game starts",
           code_name: code_name,
-          status: "Alive"
+          status: "Alive",
+          num_kills: 0
         })
       }
       for(var i=0; i<this.fake_earth; i++){
@@ -405,7 +407,8 @@ export default {
           team_number: null,
           kill_code: "Generated when game starts",
           code_name: code_name,
-          status: "Alive"
+          status: "Alive",
+          num_kills: 0
         })
       }
       for(var i=0; i<this.fake_air; i++){
@@ -417,7 +420,8 @@ export default {
           team_number: null,
           kill_code: "Generated when game starts",
           code_name: code_name,
-          status: "Alive"
+          status: "Alive",
+          num_kills: 0
         })
       }
     },
