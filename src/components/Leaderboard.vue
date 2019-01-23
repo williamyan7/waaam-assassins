@@ -17,6 +17,23 @@
         </tr>
       </tbody>
     </table>
+    <h3>Top 10 Most Kills</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Code Name</th>
+          <th>Dynasty</th>
+          <th># Kills</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(user,index) in top_10_killers" :key="index">
+          <td>{{ user.code_name }}</td>
+          <td>{{ user.dynasty }}
+          <td>{{ user.num_kills }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -27,7 +44,8 @@ export default {
     return {
       dynasty_info: [],
       user_info: [],
-      all_users: []
+      all_users: [],
+      top_10_killers: []
     }
   },
   created() {
@@ -40,6 +58,9 @@ export default {
         snapshot.forEach(doc => {
           this.all_users.push(doc.data())
         })
+      })
+      .then(() => {
+        this.rankKills()
       })
       .then(() => {
         //Populate dynasty data (aggregate kills and alive)
@@ -100,7 +121,35 @@ export default {
         })
       })
       //Populate individual user data (top 10 kills)
-      
+
+    },
+    rankKills() {
+      this.all_users = this.bubbleSort(this.all_users)
+      this.top_10_killers = this.all_users.slice(0,9)
+    },
+    //Helper functions for the sort
+    compare(user_1, user_2) {
+      if(user_1.num_kills < user_2.num_kills) {
+        return -1
+      }
+      if (user_1.num_kills > user_2.num_kills) {
+        return 1
+      } else {
+        return 0
+      }
+    },
+    bubbleSort(array) {
+      var len = array.length
+      for(var i=len-1; i>=0; i--) {
+        for(var j=1; j<=i; j++) {
+          if(this.compare(array[j-1], array[j]) == -1) {
+            var temp = array[j-1]
+            array[j-1] = array[j]
+            array[j] = temp
+          }
+        }
+      }
+      return array
     }
   }
 }
