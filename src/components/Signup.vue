@@ -66,10 +66,6 @@ export default {
         if(code_name_available) {
           if(this.password == this.confirmPassword) {
             firebase.auth().createUserWithEmailAndPassword(this.email,this.password)
-            // .then(() => {
-            //   this.generateKillCode()
-            //   console.log(this.kill_code)
-            // })
             .then(() => {
               console.log(this.kill_code)
               ref.doc(this.email).set({

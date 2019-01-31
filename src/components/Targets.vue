@@ -21,6 +21,10 @@
                     <td>Dynasty</td>
                     <td>{{ target.dynasty }}</td>
                   </tr>
+                  <tr>
+                    <td>Status</td>
+                    <td>{{ target.status }}</td>
+                  </tr>
                 </tbody>
               </table>
             </v-flex>

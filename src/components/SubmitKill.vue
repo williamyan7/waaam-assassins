@@ -36,14 +36,22 @@ export default {
       target_team_num: null,
       targeted_by_team_num: null,
       killed_user_team_num: null,
+      //Variables for updating kill log info
+      kill_log: [],
+      killer_code_name: null,
+      killed_code_name: null,
+      killer_dynasty: null,
+      killed_dynasty: null,
+      kill_time: null
     }
   },
   created() {
     var user = firebase.auth().currentUser
-    var self = this
     firebase.firestore().collection('users').doc(user.email).get()
     .then(doc => {
-      self.team_num = doc.data().team_number
+      this.team_num = doc.data().team_number
+      this.killer_dynasty = doc.data().dynasty,
+      this.killer_code_name = doc.data().code_name
     })
   },
   methods: {
@@ -61,19 +69,23 @@ export default {
         self.targeted_by_team_num = doc.data().targeted_by_team
       })
       .then(() => {
-        //Go through all users and pull Alive/Danger status users with corresponding target/targeted by team numbers
+        //Go through all users and pull Alive status users with corresponding target/targeted by team numbers
         firebase.firestore().collection('users').get()
         .then(snapshot => {
           snapshot.forEach(doc => {
             if(doc.data().team_number == self.target_team_num) {
-              if(doc.data().status == "Alive" || doc.data().status == "Danger") {
+              if(doc.data().status == "Alive") {
                 self.target_team_codes.push(doc.data().kill_code)
               }
             }
             if(doc.data().team_number == self.targeted_by_team_num) {
-              if(doc.data().status == "Alive" || doc.data().status == "Danger") {
+              if(doc.data().status == "Alive") {
                 self.targeted_by_team_codes.push(doc.data().kill_code)
               }
+            }
+            //Push all danger list kill codes to array
+            if(doc.data().status == "Danger") {
+              self.danger_list_codes.push(doc.data().kill_code)
             }
           })
         })
@@ -85,7 +97,10 @@ export default {
             .then(snapshot => {
               snapshot.forEach(doc => {
                 this.target_email = doc.data().email
-                this.killed_user_team_num = doc.data().team_number
+                this.killed_user_team_num = doc.data().team_number,
+                this.killed_code_name = doc.data().code_name,
+                this.killed_dynasty = doc.data().dynasty,
+                this.kill_time = new Date()
                 this.success_feedback = "Congratulations! You've successfully killed " + doc.data().code_name
                 self.kill_code = null
               })
@@ -93,6 +108,7 @@ export default {
               .then(() => {
                 this.updateTargetKilledStatus()
                 this.increasePlayerKillCount()
+                this.addToKillLog()
               })
             .then(() => {
               this.checkIfFinalKillCode()
@@ -105,11 +121,28 @@ export default {
       })
     },
     checkCode() {
-      return (this.target_team_codes.indexOf(this.kill_code) > -1 || this.targeted_by_team_codes.indexOf(this.kill_code) > -1)
+      return (this.target_team_codes.indexOf(this.kill_code) > -1 || this.targeted_by_team_codes.indexOf(this.kill_code) > -1 || this.danger_list_codes.indexOf(this.kill_code) > -1)
     },
     updateTargetKilledStatus() {
       firebase.firestore().collection('users').doc(this.target_email)
       .update({status: 'Dead'})
+    },
+    addToKillLog() {
+      var current_kill_log = []
+      firebase.firestore().collection('kill_codes').doc('kill_log').get()
+      .then(doc => {
+        current_kill_log = doc.data().kill_log
+        current_kill_log.push({
+          killer_code_name: this.killer_code_name,
+          killer_dynasty: this.killer_dynasty,
+          killed_code_name: this.killed_code_name,
+          killed_dynasty: this.killed_dynasty,
+          kill_time: this.kill_time
+        })
+        firebase.firestore().collection('kill_codes').doc('kill_log').update({
+          kill_log: current_kill_log
+        })
+      })
     },
     increasePlayerKillCount() {
       var user = firebase.auth().currentUser
@@ -120,7 +153,8 @@ export default {
         firebase.firestore().collection('users').doc(user.email).update(
           {
             num_kills: self.num_kills + 1,
-            days_since_last_kill: 0
+            days_since_last_kill: 0,
+            status: "Alive"
           }
         )
       })

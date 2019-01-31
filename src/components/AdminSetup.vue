@@ -9,14 +9,14 @@
     4. Assign Initial Targets -> REFRESH THE PAGE
     5. Check to make sure team assignments look good in table
     6. Finalize Teams -->
-    <!-- <button class="btn red" @click="generateKillCodeList">Generate Kill Codes</button>
+    <button class="btn red" @click="generateKillCodeList">Generate Kill Codes</button>
     <br><br><button class="btn red" @click="clearFakeUsers">Clear Fakes</button>
     <br><br>Enter number of fake users per dynasty:
     <input class="inputField" type="text" name="fakeFire" v-model="fake_fire"></input>
     <input class="inputField" type="text" name="fakeWater" v-model="fake_water"></input>
     <input class="inputField" type="text" name="fakeEarth" v-model="fake_earth"></input>
     <input class="inputField" type="text" name="fakeAir" v-model="fake_air"></input>
-    <br><br><button class="btn red" @click="createFakeUsers">Create Fakes</button> -->
+    <br><br><button class="btn red" @click="createFakeUsers">Create Fakes</button>
     <h5>Current # Users by Dynasty (refresh page for most up to date)</h5>
     <table>
       <thead>
@@ -382,7 +382,8 @@ export default {
           kill_code: "Generated when game starts",
           code_name: code_name,
           status: "Alive",
-          num_kills: 0
+          num_kills: 0,
+          days_since_last_kill: 0
         })
       }
       for(var i=0; i<this.fake_water; i++){
@@ -395,7 +396,8 @@ export default {
           kill_code: "Generated when game starts",
           code_name: code_name,
           status: "Alive",
-          num_kills: 0
+          num_kills: 0,
+          days_since_last_kill: 0
         })
       }
       for(var i=0; i<this.fake_earth; i++){
@@ -408,7 +410,8 @@ export default {
           kill_code: "Generated when game starts",
           code_name: code_name,
           status: "Alive",
-          num_kills: 0
+          num_kills: 0,
+          days_since_last_kill: 0
         })
       }
       for(var i=0; i<this.fake_air; i++){
@@ -421,7 +424,8 @@ export default {
           kill_code: "Generated when game starts",
           code_name: code_name,
           status: "Alive",
-          num_kills: 0
+          num_kills: 0,
+          days_since_last_kill: 0
         })
       }
     },
@@ -499,6 +503,5 @@ export default {
 }
 .inputField {
   max-width: 50px;
-
 }
 </style>

@@ -1,6 +1,13 @@
 <template lang="html">
   <div class="admin center card-panel">
     <h2> Admin Dashboard </h2>
+    Current danger list threshold:
+    <input class="inputField" type="text" name="danger_list_threshold" v-model="danger_list_threshold"></input>
+    Current auto die threshold:
+    <input class="inputField" type="text" name="auto_die_threshold" v-model="auto_die_threshold"></input>
+    <button class="btn red" @click="updateThresholds">Update Thresholds</button>
+    <br><br>
+    <button class="btn red" @click="updateDangerList">Update Danger List</button>
     <h5>Alive Teams Setup</h5>
     <table>
       <thead>
@@ -63,11 +70,19 @@ export default {
       dead_teams: [],
       all_users: [],
       all_teams: [],
-      user_info: []
+      user_info: [],
+      danger_list_deaths_user_emails: [],
+      danger_list_threshold: null,
+      auto_die_threshold: null
     }
   },
   created() {
     this.fillArrays()
+    firebase.firestore().collection('kill_codes').doc('danger_list_thresholds').get()
+    .then(doc => {
+      this.danger_list_threshold = doc.data().danger_list
+      this.auto_die_threshold = doc.data().auto_die
+    })
   },
   methods: {
     fillArrays() {
@@ -147,10 +162,172 @@ export default {
         })
       })
     },
+    updateDangerList() {
+      //Increment everyone's days since last kill by 1
+      firebase.firestore().collection('users').get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          var days_since_kill = doc.data().days_since_last_kill + 1
+          var email = doc.data().email
+          if(doc.data().status == "Alive" || doc.data().status == "Danger") {
+            if(days_since_kill <= this.danger_list_threshold) {
+              firebase.firestore().collection('users').doc(email.toString()).update({
+                days_since_last_kill: days_since_kill,
+              })
+            }
+            if(days_since_kill > this.danger_list_threshold) {
+              firebase.firestore().collection('users').doc(email.toString()).update({
+                days_since_last_kill: days_since_kill,
+                status: "Danger"
+              })
+            }
+            if(days_since_kill > this.auto_die_threshold) {
+              this.danger_list_deaths_user_emails.push(email)
+              firebase.firestore().collection('users').doc(email.toString()).update({
+                days_since_last_kill: days_since_kill,
+                status: "Dead"
+              })
+            }
+          }
+        })
+      })
+      .then(() => {
+        this.updateTeamTargets()
+      })
+    },
+    updateTeamTargets() {
+      if(this.danger_list_deaths_user_emails.length > 0) {
+        for(var i=0; i<this.danger_list_deaths_user_emails.length; i++) {
+          var email = this.danger_list_deaths_user_emails[i]
+          this.checkIfFinalKillCode(email)
+        }
+      }
+    },
+    updateThresholds() {
+      firebase.firestore().collection('kill_codes').doc('danger_list_thresholds').update({
+        auto_die: parseInt(this.auto_die_threshold,10),
+        danger_list: parseInt(this.danger_list_threshold,10)
+      })
+    },
+    //Code from Submit Kill for when a person auto dies and they are the last in their team
+    checkIfFinalKillCode(killed_user_email) {
+      var target_team_users = []
+      var killed_user_team_num = null
+      firebase.firestore().collection('users').where('email','==',killed_user_email).get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          killed_user_team_num = doc.data().team_number
+        })
+      })
+      .then(() => {
+        firebase.firestore().collection('users').where('team_number','==',killed_user_team_num).get()
+        .then(snapshot => {
+          snapshot.forEach(doc => {
+            if(doc.data().status == "Alive" || doc.data().status == "Danger") {
+              target_team_users.push(doc.data())
+            }
+          })
+        })
+      })
+      .then(() => {
+        if(target_team_users.length == 0){
+          this.assignNewTarget(killed_user_team_num)
+        } else {
+          console.log('not last target')
+        }
+      })
+    },
+    //Logic in this method takes a generic approach regardless of what team the killer is on
+    //Reason for this is if killer kills someone on the danger list that is on a team they are not targeting
+    assignNewTarget(killed_user_team_num) {
+      var killed_user___targeted_by_team_num = null //Team number of killed user's targeted by team number
+      var killed_user___targeted_by_team_dynasty = null //Dynasty of killed user's targeted by team
+      var team_targeting_circle = []
+      var original_target_value = 99999
+      //Populate targeting circle array with team objects
+      firebase.firestore().collection('teams').get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          team_targeting_circle.push({
+            team_number: doc.data().team_number,
+            target_team: doc.data().target_team,
+            targeted_by_team: doc.data().targeted_by_team,
+            dynasty: doc.data().dynasty
+          })
+        })
+      })
+      .then(() => {
+        console.log(team_targeting_circle)
+        //Populate variables that will not change and that are needed to check dynasty alignment and set link in chain
+        var index___killed_user_team = team_targeting_circle.map(team => team.team_number).indexOf(killed_user_team_num)
+        //Below variable represents team number of the team that KILLED the dead team
+        killed_user___targeted_by_team_num = team_targeting_circle[index___killed_user_team].targeted_by_team
+        var index___killed_user_team_targeted_by = team_targeting_circle.map(team => team.team_number).indexOf(killed_user___targeted_by_team_num)
+        //Below variable represents the dynasty of the team that KILLED the dead team
+        killed_user___targeted_by_team_dynasty = team_targeting_circle[index___killed_user_team_targeted_by].dynasty
+        //Target of team that was just killed
+        var new_target_team_num = team_targeting_circle[index___killed_user_team].target_team
+        firebase.firestore().collection('teams').doc(killed_user_team_num.toString()).get()
+        .then(doc => {
+          original_target_value = doc.data().original_target_team
+        })
+        .then(() => {
+          //Check to make sure next team is not same dynasty, if it is, move on to next
+          var same_dynasty = true
+          //If there is an original link, make team target that team
+          console.log(original_target_value)
+          if(original_target_value != null) {
+            console.log('reconnect the chain!')
+            var same_dynasty = false
+            new_target_team_num = original_target_value
+          }
+          while(same_dynasty) {
+            var index___target_team = team_targeting_circle.map(team => team.team_number).indexOf(new_target_team_num)
+            var target_team_dynasty = team_targeting_circle[index___target_team].dynasty
+            if(target_team_dynasty == killed_user___targeted_by_team_dynasty) {
+              //Update to maintain original link for when this team dies
+              firebase.firestore().collection('teams').doc(killed_user___targeted_by_team_num.toString()).update({
+                original_target_team: new_target_team_num
+              })
+              new_target_team_num = team_targeting_circle[index___target_team].target_team
+            } else {
+              same_dynasty = false
+              console.log('Found a non-match!')
+            }
+          }
+        //Once target team is confirmed (nest then's)
+          firebase.firestore().collection('teams').doc(killed_user_team_num.toString()).update({
+            status: "Dead",
+            target_team: null,
+            targeted_by_team: null
+          }).then(() => {
+            console.log('updating complete (dead team)')
+            firebase.firestore().collection('teams').doc(new_target_team_num.toString()).update({
+              targeted_by_team: killed_user___targeted_by_team_num
+            }).then(() => {
+              console.log('updating complete (target team)')
+              firebase.firestore().collection('teams').doc(killed_user___targeted_by_team_num.toString()).update({
+                target_team: new_target_team_num
+              }).then(() => {
+                console.log('updating complete (targeted by team)')
+                })
+              })
+            })
+        })
+      })
+    }
   }
 }
 </script>
 
 <style lang="css">
-
+.admin {
+  max-width: 1000px;
+  margin-top: 40px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.inputField {
+  max-width: 50px;
+}
 </style>
