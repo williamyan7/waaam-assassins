@@ -1,6 +1,6 @@
 <template lang="html">
   <div class="signup">
-    <form class="card-panel" @submit.prevent="signup">
+    <form class="card-panel" @submit.prevent="signup" enctype="multipart/form-data">
       <h2 class="center red-text">Signup</h2>
       <div class="field">
         <label for="name" class="label">Name:</label>
@@ -14,6 +14,15 @@
         <label for="code_name" class="label">Code Name:</label><span @click="generateRandomName" class="random">Generate Random</span>
         <input type="text" name="code_name" v-model="code_name">
       </div>
+      <div>
+        <label for="uploadedImage" class="custom-file-upload grey-text text-darken-2">Upload Profile Photo
+        <input class="photoInput" type="file" value="upload" id="uploadedImage" accept="image/*" @change="storeImageLocal">
+        </label>
+        <br>This picture will be used by opposing teams to identify you. You can upload
+        any picture of yourself. The only caveat is it should be possible to tell that
+        it is you (e.g. no baby pictures or highly obscured pictures).
+      </div>
+      <br>
       <div class="field">
         <label for="password" class="label">Password:</label>
         <input type="password" name="password" v-model="password">
@@ -52,6 +61,7 @@ export default {
       feedback: null,
       code_name: null,
       dynasty: null,
+      photo: null,
       existing_code_names: [],
       kill_code: 'Generated when game starts',
       dynasties: ['Fire', 'Water', 'Earth', 'Air']
@@ -62,7 +72,7 @@ export default {
       var self = this
       const ref = firebase.firestore().collection('users')
       var code_name_available = this.checkCodeNameAvailability()
-      if(this.name && this.email && this.password && this.code_name){
+      if(this.name && this.email && this.password && this.code_name && this.photo){
         if(code_name_available) {
           if(this.password == this.confirmPassword) {
             firebase.auth().createUserWithEmailAndPassword(this.email,this.password)
@@ -73,7 +83,7 @@ export default {
                 email: this.email,
                 dynasty: this.dynasty,
                 code_name: this.code_name,
-                uploadedPhoto: false,
+                uploadedPhoto: true,
                 team_number: null,
                 target_team_number: null,
                 num_kills: 0,
@@ -83,6 +93,7 @@ export default {
               })
             })
             .then(() => {
+                this.uploadImage()
                 firebase.auth().currentUser.sendEmailVerification()})
             .then(() => {this.$router.push({ name: 'VerifyEmail' })})
               .catch(err => {
@@ -99,6 +110,28 @@ export default {
         this.feedback = 'Please complete all fields.'
       }
     },
+    storeImageLocal(event) {
+      this.photo = event.target.files
+      console.log('storing locally')
+      console.log(this.photo)
+    },
+    uploadImage() {
+      var self = this
+      firebase.storage().ref().child(this.email).put(this.photo[0])
+      .then(() => {
+        //Get image URL
+        firebase.storage().ref().child(this.email)
+        .getDownloadURL().then(function(url) {
+        self.imageURL = url
+        self.hasImage = true
+        firebase.firestore().collection('users').doc(this.email)
+        .update({
+          uploadedPhoto: true,
+          imageURL: url
+        })
+        }).catch(err => console.log(err))
+      })
+    },
     generateRandomName() {
       var random_nouns = []
       var random_adj = []
@@ -114,21 +147,6 @@ export default {
         })
       })
     },
-    // generateKillCode(){
-    //   var kill_codes = []
-    //   var self = this
-    //   firebase.firestore().collection('kill_codes').doc('existing_kill_codes').get()
-    //   .then(doc => {
-    //     kill_codes = doc.data().codes_list
-    //     self.kill_code = kill_codes.pop()
-    //     console.log(self.kill_code)
-    //     firebase.firestore().collection('kill_codes').doc('existing_kill_codes')
-    //       .set({codes_list: kill_codes})
-    //   })
-    //   return new Promise((res,rej) => {
-    //     setTimeout(() => res(), 1000)
-    //   })
-    // },
     checkCodeNameAvailability() {
       return !(this.existing_code_names.indexOf(this.code_name.toLowerCase()) > -1)
     }

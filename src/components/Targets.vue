@@ -5,7 +5,8 @@
         <div
         v-for="target in targets"
         :key="target.email">
-          <v-card width="80%" justify-center>
+        <v-flex xs12 sm8 offset-sm2>
+          <v-card>
             <v-card-title class="min-width">
               <v-flex xs6>
                 <img :src="target.imageURL" class="profilePicture">
@@ -30,6 +31,7 @@
             </v-flex>
             </v-card-title>
           </v-card>
+        </v-flex>
           <br>
           </div>
         </v-flex>

@@ -14,8 +14,8 @@
       <p class="red-text center" v-if="fail_feedback">{{ fail_feedback }}</p>
       <p class="green-text center" v-if="success_feedback">{{ success_feedback }}</p>
     </div>
-    <button class="btn blue" @click="resetLastKill">Reset last kill</button>
-    <button class="btn blue" @click="reviveAll">Revive all</button>
+    <!-- <button class="btn blue" @click="resetLastKill">Reset last kill</button>
+    <button class="btn blue" @click="reviveAll">Revive all</button> -->
   </div>
 </template>
 
@@ -90,8 +90,6 @@ export default {
           })
         })
         .then(() => {
-          console.log('target team codes: ' + self.target_team_codes)
-          console.log('targeted by team codes: ' + self.targeted_by_team_codes)
           if(this.checkCode()) {
             firebase.firestore().collection('users').where('kill_code','==',this.kill_code).get()
             .then(snapshot => {

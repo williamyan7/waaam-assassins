@@ -85,7 +85,7 @@ export default {
                 { title: 'Submit Kill', path: '/submitkill', icon: 'highlight_off'},
                 { title: 'Danger List', path: '/dangerlist', icon: 'mood_bad'},
                 { title: 'Leaderboard', path: '/leaderboard', icon: 'whatshot'},
-                { path: '/profile', icon: 'person' }
+                { title: 'Profile', path: '/profile', icon: 'person' }
               ]
             }
         } else {

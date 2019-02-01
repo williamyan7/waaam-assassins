@@ -1,11 +1,12 @@
 <template lang="html">
   <v-layout wrap>
-    <v-flex class="text-xs-center" mt-5 wrap>
+    <v-flex class="text-xs-center" mt-6 wrap>
       <h2> Team </h2>
         <div
         v-for="member in team"
         :key="member.email">
-          <v-card width="80%" justify-center>
+        <v-flex xs12 sm8 offset-sm2>
+          <v-card>
             <v-card-title class="min-width">
               <v-flex xs6>
                 <img :src="member.imageURL" class="profilePicture">
@@ -39,6 +40,7 @@
             </v-flex>
             </v-card-title>
           </v-card>
+        </v-flex>
           <br>
           </div>
         </v-flex>
@@ -79,7 +81,8 @@ export default {
 <style lang="css">
 .card {
   max-width: 700px;
-  margin: auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 .profilePicture {
   max-height: 300px;
