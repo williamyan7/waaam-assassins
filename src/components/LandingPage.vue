@@ -2,11 +2,11 @@
   <v-container fluid>
   <v-layout row wrap>
     <v-flex xs12 class="text-xs-center" mt-5>
-      <h2>Welcome to WAAAM Assassins</h2>
+      <h2>Welcome to WAAAM Ninjas</h2>
     </v-flex>
     <v-flex xs12 sm6 offset-sm3 mt-3>
       <p class="blockquote text-xs-center">
-        This is where you'll find all the information you need on WAAAM Assassins
+        This is where you'll find all the information you need on WAAAM Ninjas
       </p>
     </v-flex>
     <v-flex xs12 sm6 offset-sm3 class="text-xs-center" mt-3>

@@ -64,7 +64,8 @@ export default {
       photo: null,
       existing_code_names: [],
       kill_code: 'Generated when game starts',
-      dynasties: ['Fire', 'Water', 'Earth', 'Air']
+      dynasties: ['Fire', 'Water', 'Earth', 'Air'],
+      imageURL: null
     }
   },
   methods: {
@@ -89,7 +90,8 @@ export default {
                 num_kills: 0,
                 days_since_last_kill: 0,
                 kill_code: this.kill_code,
-                status: 'Alive'
+                status: 'Alive',
+                imageURL: null
               })
             })
             .then(() => {
@@ -117,14 +119,14 @@ export default {
     },
     uploadImage() {
       var self = this
-      firebase.storage().ref().child(this.email).put(this.photo[0])
+      console.log(self.code_name)
+      firebase.storage().ref().child(self.code_name).put(this.photo[0])
       .then(() => {
         //Get image URL
-        firebase.storage().ref().child(this.email)
+        firebase.storage().ref().child(self.code_name)
         .getDownloadURL().then(function(url) {
         self.imageURL = url
-        self.hasImage = true
-        firebase.firestore().collection('users').doc(this.email)
+        firebase.firestore().collection('users').doc(self.email)
         .update({
           uploadedPhoto: true,
           imageURL: url
@@ -187,5 +189,8 @@ export default {
 }
 .label {
   font-size: 1em;
+}
+.profilePicture {
+  height: 50px;
 }
 </style>

@@ -15,7 +15,7 @@
           pictures).</p>
         <form enctype="multipart/form-data">
           <label for="uploadedImage" class="custom-file-upload grey-text text-darken-2">Upload Photo<br>(This may take a few seconds)
-          <input class="photoInput" type="file" value="upload" id="uploadedImage" accept="image/*" @change="uploadImage">
+          <input class="photoInput" type="file" value="upload" id="image" accept="image/*" @change="uploadImage">
           </label>
           <button @click="removeImage"><i class="material-icons grey-text text-darken-2 deleteButton">delete</i></button>
         </form>
@@ -61,6 +61,10 @@
             </tr>
           </tbody>
         </table><br>
+        If you do not register a kill within <font color="red">{{ danger_list_threshold }}</font> days you will be placed on the danger list. <br>
+        If you do not register a kill within <font color="red">{{ auto_die_threshold }}</font> days you will automatically die.<br><br>
+        <font color="red">NOTE 1: The above thresholds are subject to change as the game progresses. You will be notified if there are changes.</font> <br>
+        <font color="red">NOTE 2: To clarify, your "Days since last kill" must be <b>greater than</b> the threshold for the effect to take place</font> <br>
       </div>
     </v-layout>
   </div>
@@ -80,7 +84,9 @@ export default {
       status:'',
       kill_code:'',
       num_kills:'',
-      days_since_last_kill:''
+      days_since_last_kill:'',
+      danger_list_threshold: null,
+      auto_die_threshold: null
     }
   },
   created() {
@@ -99,11 +105,16 @@ export default {
       self.num_kills = data.num_kills
       self.status = data.status
       if(self.hasImage){
-        firebase.storage().ref().child(firebase.auth().currentUser.email)
+        firebase.storage().ref().child(self.code_name)
         .getDownloadURL().then(function(url) {
           self.imageURL = url
         })
       }
+    })
+    firebase.firestore().collection('kill_codes').doc('danger_list_thresholds').get()
+    .then(doc => {
+      this.auto_die_threshold = doc.data().auto_die
+      this.danger_list_threshold = doc.data().danger_list
     })
   },
   methods: {
@@ -111,10 +122,10 @@ export default {
       var file = event.target.files
       var self = this
       //Upload image
-      firebase.storage().ref().child(firebase.auth().currentUser.email).put(file[0])
+      firebase.storage().ref().child(this.code_name).put(file[0])
       .then(() => {
         //Get image URL
-        firebase.storage().ref().child(firebase.auth().currentUser.email)
+        firebase.storage().ref().child(this.code_name)
         .getDownloadURL().then(function(url) {
         self.imageURL = url
         self.hasImage = true
@@ -173,5 +184,8 @@ input[type="file"] {
 .settings {
   margin-left: 40px;
   margin-top: 20px;
+}
+#image {
+    image-orientation: from-image;
 }
 </style>
