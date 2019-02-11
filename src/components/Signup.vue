@@ -11,11 +11,11 @@
         <input type="email" name="email" v-model="email">
       </div>
       <div class="field">
-        <label for="code_name" class="label">Code Name:</label><span @click="generateRandomName" class="random">Generate Random</span>
+        <label for="code_name" class="label">Code Name (come up with your own, or if you can't, use a randomly generated one):</label><span @click="generateRandomName" class="random">Generate Random</span>
         <input type="text" name="code_name" v-model="code_name">
       </div>
       <div>
-        <label for="uploadedImage" class="custom-file-upload grey-text text-darken-2">Upload Profile Photo
+        <label for="uploadedImage" class="grey-text text-darken-2">Upload Profile Photo
         <input class="photoInput" type="file" value="upload" id="uploadedImage" accept="image/*" @change="storeImageLocal">
         </label>
         <br>This picture will be used by opposing teams to identify you. You can upload
@@ -78,7 +78,6 @@ export default {
           if(this.password == this.confirmPassword) {
             firebase.auth().createUserWithEmailAndPassword(this.email,this.password)
             .then(() => {
-              console.log(this.kill_code)
               ref.doc(this.email).set({
                 name: this.name,
                 email: this.email,
@@ -114,12 +113,9 @@ export default {
     },
     storeImageLocal(event) {
       this.photo = event.target.files
-      console.log('storing locally')
-      console.log(this.photo)
     },
     uploadImage() {
       var self = this
-      console.log(self.code_name)
       firebase.storage().ref().child(self.code_name).put(this.photo[0])
       .then(() => {
         //Get image URL
@@ -189,8 +185,5 @@ export default {
 }
 .label {
   font-size: 1em;
-}
-.profilePicture {
-  height: 50px;
 }
 </style>

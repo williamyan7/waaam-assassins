@@ -14,6 +14,7 @@ import DangerList from '@/components/DangerList'
 import AdminDashboard from '@/components/AdminDashboard'
 import AdminSetup from '@/components/AdminSetup'
 import SubmitKill from '@/components/SubmitKill'
+import PhotoCheck from '@/components/PhotoCheck'
 
 Vue.use(Router)
 
@@ -44,6 +45,16 @@ const router = new Router({
         }
       }},
     { path: '/admin-dashboard', name: 'Admin Dashboard', component: AdminDashboard,
+      beforeEnter: (to, from, next) => {
+        var email = firebase.auth().currentUser.email
+        const isAdmin = (email == 'williamyan7@gmail.com' || email == 'willyan@wharton.upenn.edu' || 'linyex@wharton.upenn.edu' )
+        if(isAdmin) {
+          next()
+        } else {
+          next('/')
+        }
+      }},
+    { path: '/photocheck', name: 'Photo Check', component: PhotoCheck,
       beforeEnter: (to, from, next) => {
         var email = firebase.auth().currentUser.email
         const isAdmin = (email == 'williamyan7@gmail.com' || email == 'willyan@wharton.upenn.edu' || 'linyex@wharton.upenn.edu' )

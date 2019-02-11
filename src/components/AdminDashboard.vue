@@ -1,13 +1,30 @@
 <template lang="html">
   <div class="admin center card-panel">
     <h2> Admin Dashboard </h2>
+    <div class="switch">
+      Leaderboard available
+      <label>
+        No
+        <input type="checkbox" @click="toggleLeaderboard" v-model="leaderboard_available">
+        <span class="lever"></span>
+        Yes
+      </label><br>
+      Photo editing available
+      <label>
+        No
+        <input type="checkbox" @click="togglePhotoEditing" v-model="photo_editing_available">
+        <span class="lever"></span>
+        Yes
+      </label>
+    </div>
     Current danger list threshold:
     <input class="inputField" type="text" name="danger_list_threshold" v-model="danger_list_threshold"></input>
     Current auto die threshold:
     <input class="inputField" type="text" name="auto_die_threshold" v-model="auto_die_threshold"></input>
     <button class="btn red" @click="updateThresholds">Update Thresholds</button>
+    <br><p>Check photos <a href="/photocheck">here</a>.</p>
     <br><br>
-    <button class="btn red" @click="updateDangerList">Update Danger List</button>
+    <button class="btn red" @click="updateDangerList">Update Danger List</button><br>
     <h5>Alive Teams Setup</h5>
     <table>
       <thead>
@@ -73,7 +90,9 @@ export default {
       user_info: [],
       danger_list_deaths_user_emails: [],
       danger_list_threshold: null,
-      auto_die_threshold: null
+      auto_die_threshold: null,
+      leaderboard_available: null,
+      photo_editing_available: null
     }
   },
   created() {
@@ -82,6 +101,8 @@ export default {
     .then(doc => {
       this.danger_list_threshold = doc.data().danger_list
       this.auto_die_threshold = doc.data().auto_die
+      this.leaderboard_available = doc.data().leaderboard_available
+      this.photo_editing_available = doc.data().photo_editing_available
     })
   },
   methods: {
@@ -314,6 +335,16 @@ export default {
               })
             })
         })
+      })
+    },
+    toggleLeaderboard() {
+      firebase.firestore().collection('kill_codes').doc('danger_list_thresholds').update({
+        leaderboard_available: !this.leaderboard_available
+      })
+    },
+    togglePhotoEditing() {
+      firebase.firestore().collection('kill_codes').doc('danger_list_thresholds').update({
+        photo_editing_available: !this.photo_editing_available
       })
     }
   }

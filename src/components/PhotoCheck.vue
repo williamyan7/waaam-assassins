@@ -1,7 +1,7 @@
 <template lang="html">
   <v-layout wrap>
     <v-flex class="text-xs-center" mt-6 wrap>
-      <h2> Team </h2>
+      <h2> Photo Check </h2>
         <div
         v-for="member in team"
         :key="member.email">
@@ -49,6 +49,8 @@
 
 <script>
 import firebase from 'firebase'
+//This page is to provide the admin with a quick view of all the photos and people to check the
+//photos look good
 export default {
   data() {
     return {
@@ -61,19 +63,13 @@ export default {
   },
   methods: {
     populateTeam() {
-      firebase.firestore().collection('users').doc(firebase.auth().currentUser.email).get()
-      .then(doc => this.team_number = doc.data().team_number)
-      .then(() => {
-        if(this.team_number != null) {
-          firebase.firestore().collection('users').where('team_number', '==', this.team_number).get()
-          .then(snapshot => {
-            snapshot.forEach(doc => {
-              this.team.push({name: doc.data().name, code_name: doc.data().code_name,
-                email: doc.data().email, dynasty: doc.data().dynasty,
-                status: doc.data().status, imageURL: doc.data().imageURL})
-            })
-          })
-        }
+      firebase.firestore().collection('users').get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          this.team.push({name: doc.data().name, code_name: doc.data().code_name,
+            email: doc.data().email, dynasty: doc.data().dynasty,
+            status: doc.data().status, imageURL: doc.data().imageURL})
+        })
       })
     }
   }

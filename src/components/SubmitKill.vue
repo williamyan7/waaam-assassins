@@ -42,7 +42,8 @@ export default {
       killed_code_name: null,
       killer_dynasty: null,
       killed_dynasty: null,
-      kill_time: null
+      kill_time: null,
+      killer_status: null
     }
   },
   created() {
@@ -51,7 +52,8 @@ export default {
     .then(doc => {
       this.team_num = doc.data().team_number
       this.killer_dynasty = doc.data().dynasty,
-      this.killer_code_name = doc.data().code_name
+      this.killer_code_name = doc.data().code_name,
+      this.killer_status = doc.data().status
     })
   },
   methods: {
@@ -119,7 +121,11 @@ export default {
       })
     },
     checkCode() {
-      return (this.target_team_codes.indexOf(this.kill_code) > -1 || this.targeted_by_team_codes.indexOf(this.kill_code) > -1 || this.danger_list_codes.indexOf(this.kill_code) > -1)
+      if(this.killer_status == "Dead") {
+        return (this.danger_list_codes.indexOf(this.kill_code) > -1)
+      } else {
+        return (this.target_team_codes.indexOf(this.kill_code) > -1 || this.targeted_by_team_codes.indexOf(this.kill_code) > -1 || this.danger_list_codes.indexOf(this.kill_code) > -1)
+      }
     },
     updateTargetKilledStatus() {
       firebase.firestore().collection('users').doc(this.target_email)

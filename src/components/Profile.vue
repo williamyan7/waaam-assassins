@@ -4,21 +4,23 @@
     <v-layout row wrap>
       <v-flex xs12 class="text-xs-center">
         <h4>Welcome to your profile</h4>
-        <h6>Please make sure to upload a photo</h6>
       </v-flex>
       <v-flex xs12 class="text-xs-center" mt-5>
         <img v-if="!hasImage" src="../assets/profile_placeholder.png" class="profilePicture">
         <img v-if="hasImage" :src="imageURL" class="profilePicture">
-        <p>This picture will be used by opposing teams to identify you.
-          You can upload any picture of yourself. The only caveat is it should
-          be possible to tell that it is you (e.g. no baby pictures or highly obscured
-          pictures).</p>
-        <form enctype="multipart/form-data">
-          <label for="uploadedImage" class="custom-file-upload grey-text text-darken-2">Upload Photo<br>(This may take a few seconds)
-          <input class="photoInput" type="file" value="upload" id="image" accept="image/*" @change="uploadImage">
-          </label>
-          <button @click="removeImage"><i class="material-icons grey-text text-darken-2 deleteButton">delete</i></button>
-        </form>
+        <div v-if="photo_editing_available">
+          <p>This picture will be used by opposing teams to identify you.
+            You can upload any picture of yourself. The only caveat is it should
+            be possible to tell that it is you (e.g. no baby pictures or highly obscured
+            pictures). Note that you will not be able to change your picture after the game starts.</p>
+          <form enctype="multipart/form-data">
+            <label for="uploadedImage" class="grey-text text-darken-2">Change Photo
+            <input class="photoInput" type="file" value="upload" id="image" accept="image/*" @change="uploadImage">
+            </label>
+            <!-- <button @click="removeImage"><i class="material-icons grey-text text-darken-2 deleteButton">delete</i></button> -->
+          </form>
+          It may take a second for photo to refresh.
+        </div>
       </v-flex>
       <div class="infoSection container no-padding">
         <table>
@@ -86,7 +88,8 @@ export default {
       num_kills:'',
       days_since_last_kill:'',
       danger_list_threshold: null,
-      auto_die_threshold: null
+      auto_die_threshold: null,
+      photo_editing_available: null
     }
   },
   created() {
@@ -115,6 +118,7 @@ export default {
     .then(doc => {
       this.auto_die_threshold = doc.data().auto_die
       this.danger_list_threshold = doc.data().danger_list
+      this.photo_editing_available = doc.data().photo_editing_available
     })
   },
   methods: {
@@ -178,9 +182,9 @@ export default {
   margin-top: 30px;
   max-width: 500px;
 }
-input[type="file"] {
+/* input[type="file"] {
   display: none;
-}
+} */
 .settings {
   margin-left: 40px;
   margin-top: 20px;
