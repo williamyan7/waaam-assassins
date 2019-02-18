@@ -32,8 +32,9 @@
                   </tr>
                   <tr>
                     <td>Status</td>
-                    <td>{{ member.status }}</td>
-                    <td></td>
+                    <td v-if="member.status=='Alive'"><font color="green">{{ member.status }}</font></td>
+                    <td v-if="member.status=='Dead'"><font color="red">{{ member.status }}</font></td>
+                    <td v-if="member.status=='Danger'"><font color="orange">{{ member.status }}</font></td>
                   </tr>
                 </tbody>
               </table>
@@ -92,5 +93,8 @@ export default {
 }
 .min-width {
   min-width: 500px;
+}
+td[value="Alive"] {
+  color: green;
 }
 </style>

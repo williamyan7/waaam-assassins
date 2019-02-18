@@ -69,7 +69,6 @@ export default {
             return [
               { title: 'Rules', path: '/rules', icon: 'find_in_page' },
               { title: 'Admin', path: '/admin-dashboard'},
-              { title: 'Setup', path: '/admin-setup'},
               { title: 'Team', path: '/team', icon: 'group'},
               { title: 'Targets', path: '/targets', icon: 'highlight_off'},
               { title: 'Submit Kill', path: '/submitkill', icon: 'highlight_off'},

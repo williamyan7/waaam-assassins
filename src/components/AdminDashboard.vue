@@ -2,6 +2,13 @@
   <div class="admin center card-panel">
     <h2> Admin Dashboard </h2>
     <div class="switch">
+      Signup open
+      <label>
+        No
+        <input type="checkbox" @click="toggleSignup" v-model="signup_available">
+        <span class="lever"></span>
+        Yes
+      </label><br>
       Leaderboard available
       <label>
         No
@@ -22,7 +29,8 @@
     Current auto die threshold:
     <input class="inputField" type="text" name="auto_die_threshold" v-model="auto_die_threshold"></input>
     <button class="btn red" @click="updateThresholds">Update Thresholds</button>
-    <br><p>Check photos <a href="/photocheck">here</a>.</p>
+    <p>Check photos <a href="/photocheck">here</a>.</p>
+    <p>Game setup <a href="/admin-setup">here</a>.</p>
     <br><br>
     <button class="btn red" @click="updateDangerList">Update Danger List</button><br>
     <h5>Alive Teams Setup</h5>
@@ -92,7 +100,8 @@ export default {
       danger_list_threshold: null,
       auto_die_threshold: null,
       leaderboard_available: null,
-      photo_editing_available: null
+      photo_editing_available: null,
+      signup_available: null
     }
   },
   created() {
@@ -103,6 +112,7 @@ export default {
       this.auto_die_threshold = doc.data().auto_die
       this.leaderboard_available = doc.data().leaderboard_available
       this.photo_editing_available = doc.data().photo_editing_available
+      this.signup_available = doc.data().signup_available
     })
   },
   methods: {
@@ -345,6 +355,11 @@ export default {
     togglePhotoEditing() {
       firebase.firestore().collection('kill_codes').doc('danger_list_thresholds').update({
         photo_editing_available: !this.photo_editing_available
+      })
+    },
+    toggleSignup() {
+      firebase.firestore().collection('kill_codes').doc('danger_list_thresholds').update({
+        signup_available: !this.signup_available
       })
     }
   }

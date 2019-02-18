@@ -2,40 +2,37 @@
   <v-layout wrap>
     <v-flex class="text-xs-center" mt-3 wrap>
       <h2> Danger List </h2>
-        <div
-        v-for="target in danger_list"
+      <p>Some things to know about the danger list will be written here. To be filled out later.</p>
+      <h4>Fire Dynasty</h4>
+      <div class="row">
+        <picture class="column" v-for="target in danger_list_fire"
         :key="target.email">
-        <v-flex xs12 sm8 offset-sm2>
-          <v-card>
-            <v-card-title class="min-width">
-              <v-flex xs6>
-                <img :src="target.imageURL" class="profilePicture">
-              </v-flex>
-              <v-flex xs6>
-              <table>
-                <tbody>
-                  <tr>
-                    <td>Code Name</td>
-                    <td>{{ target.code_name }}</td>
-                  </tr>
-                  <tr>
-                    <td>Dynasty</td>
-                    <td>{{ target.dynasty }}</td>
-                  </tr>
-                  <tr>
-                    <td>Status</td>
-                    <td>{{ target.status }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </v-flex>
-            </v-card-title>
-          </v-card>
-        </v-flex>
-          <br>
-          </div>
-        </v-flex>
-    </v-layout>
+          <img :src="target.imageURL" class="dangerListPicture">
+        </picture>
+      </div>
+      <h4>Water Dynasty</h4>
+      <div class="row">
+        <picture class="column" v-for="target in danger_list_water"
+        :key="target.email">
+          <img :src="target.imageURL" class="dangerListPicture">
+        </picture>
+      </div>
+      <h4>Earth Dynasty</h4>
+      <div class="row">
+        <picture class="column" v-for="target in danger_list_earth"
+        :key="target.email">
+          <img :src="target.imageURL" class="dangerListPicture">
+        </picture>
+      </div>
+      <h4>Air Dynasty</h4>
+      <div class="row">
+        <picture class="column" v-for="target in danger_list_air"
+        :key="target.email">
+          <img :src="target.imageURL" class="dangerListPicture">
+        </picture>
+      </div>
+    </v-flex>
+  </v-layout>
 </template>
 
 <script>
@@ -43,7 +40,10 @@ import firebase from 'firebase'
 export default {
   data() {
     return {
-      danger_list: []
+      danger_list_fire: [],
+      danger_list_water: [],
+      danger_list_earth: [],
+      danger_list_air: []
     }
   },
   created() {
@@ -54,7 +54,18 @@ export default {
       firebase.firestore().collection('users').where('status','==','Danger').get()
       .then(snapshot => {
         snapshot.forEach(doc => {
-          this.danger_list.push(doc.data())
+          if(doc.data().dynasty == "Fire") {
+            this.danger_list_fire.push(doc.data())
+          }
+          if(doc.data().dynasty == "Water") {
+            this.danger_list_water.push(doc.data())
+          }
+          if(doc.data().dynasty == "Earth") {
+            this.danger_list_earth.push(doc.data())
+          }
+          if(doc.data().dynasty == "Air") {
+            this.danger_list_air.push(doc.data())
+          }
         })
       })
     }
@@ -63,8 +74,11 @@ export default {
 </script>
 
 <style lang="css">
-.profilePicture {
-  max-height: 300px;
-  max-width: 300px;
+.dangerListPicture {
+  max-height: 120px;
+  max-width: 120px;
+}
+img {
+  padding-left: 10px;
 }
 </style>

@@ -1,57 +1,61 @@
 <template lang="html">
   <div class="signup">
-    <form class="card-panel" @submit.prevent="signup" enctype="multipart/form-data">
-      <h2 class="center red-text">Signup</h2>
-      <div class="field">
-        <label for="name" class="label">Name:</label>
-        <input type="text" name="name" v-model="name">
-      </div>
-      <div class="field">
-        <label for="email" class="label">Email:</label>
-        <input type="email" name="email" v-model="email">
-      </div>
-      <div class="field">
-        <label for="code_name" class="label">Code Name (come up with your own, or if you can't, use a randomly generated one):</label><span @click="generateRandomName" class="random">Generate Random</span>
-        <input type="text" name="code_name" v-model="code_name">
-      </div>
-      <div>
-        <label for="uploadedImage" class="grey-text text-darken-2">Upload Profile Photo
-        <input class="photoInput" type="file" value="upload" id="uploadedImage" accept="image/*" @change="storeImageLocal">
-        </label>
-        <br>This picture will be used by opposing teams to identify you. You can upload
-        any picture of yourself. The only caveat is it should be possible to tell that
-        it is you (e.g. no baby pictures or highly obscured pictures).
-      </div>
-      <br>
-      <div class="field">
-        <label for="password" class="label">Password:</label>
-        <input type="password" name="password" v-model="password">
-      </div>
-      <div class="field">
-        <label for="confirmPassword" class="label">Confirm Password:</label>
-        <input type="password" name="confirmPassword" v-model="confirmPassword">
-      </div>
-      <div class="field">
-        <v-flex>
-          <v-select
-           :items="dynasties"
-           label="Select your dynasty"
-           v-model="dynasty"
-           ></v-select>
-         </v-flex>
-      </div>
-      <p class="red-text center" v-if="feedback">{{ feedback }}</p>
-      <div class="field center">
-        <button class="btn red">Signup</button>
-      </div>
-    </form>
+    <div v-if='!signup_available'>
+      <h3>Sign up closed - game started!</h3>
+    </div>
+    <div v-if='signup_available'>
+      <form class="card-panel" @submit.prevent="signup" enctype="multipart/form-data">
+        <h2 class="center red-text">Signup</h2>
+        <div class="field">
+          <label for="name" class="label">Name:</label>
+          <input type="text" name="name" v-model="name">
+        </div>
+        <div class="field">
+          <label for="email" class="label">Email:</label>
+          <input type="email" name="email" v-model="email">
+        </div>
+        <div class="field">
+          <label for="code_name" class="label">Code Name (come up with your own, or if you can't, use a randomly generated one):</label><span @click="generateRandomName" class="random">Generate Random</span>
+          <input type="text" name="code_name" v-model="code_name">
+        </div>
+        <div>
+          <label for="uploadedImage" class="grey-text text-darken-2">Upload Profile Photo
+          <input class="photoInput" type="file" value="upload" id="uploadedImage" accept="image/*" @change="storeImageLocal">
+          </label>
+          <br>This picture will be used by opposing teams to identify you. You can upload
+          any picture of yourself. The only caveat is it should be possible to tell that
+          it is you (e.g. no baby pictures or highly obscured pictures).
+        </div>
+        <br>
+        <div class="field">
+          <label for="password" class="label">Password:</label>
+          <input type="password" name="password" v-model="password">
+        </div>
+        <div class="field">
+          <label for="confirmPassword" class="label">Confirm Password:</label>
+          <input type="password" name="confirmPassword" v-model="confirmPassword">
+        </div>
+        <div class="field">
+          <v-flex>
+            <v-select
+             :items="dynasties"
+             label="Select your dynasty"
+             v-model="dynasty"
+             ></v-select>
+           </v-flex>
+        </div>
+        <p class="red-text center" v-if="feedback">{{ feedback }}</p>
+        <div class="field center">
+          <button class="btn red">Signup</button>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
 
 <script>
 import firebase from 'firebase'
 export default {
-  name: 'Signup',
   data() {
     return {
       name: null,
@@ -65,8 +69,22 @@ export default {
       existing_code_names: [],
       kill_code: 'Generated when game starts',
       dynasties: ['Fire', 'Water', 'Earth', 'Air'],
-      imageURL: null
+      imageURL: null,
+      signup_available: null
     }
+  },
+  created() {
+    var self = this
+    firebase.firestore().collection('users').get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        self.existing_code_names.push(doc.data().code_name.toLowerCase())
+      })
+    })
+    firebase.firestore().collection('kill_codes').doc('danger_list_thresholds').get()
+    .then(doc => {
+      this.signup_available = doc.data().signup_available
+    })
   },
   methods: {
     signup() {
@@ -148,15 +166,6 @@ export default {
     checkCodeNameAvailability() {
       return !(this.existing_code_names.indexOf(this.code_name.toLowerCase()) > -1)
     }
-  },
-  created() {
-    var self = this
-    firebase.firestore().collection('users').get()
-    .then(snapshot => {
-      snapshot.forEach(doc => {
-        self.existing_code_names.push(doc.data().code_name.toLowerCase())
-      })
-    })
   }
 }
 </script>

@@ -24,7 +24,9 @@
                   </tr>
                   <tr>
                     <td>Status</td>
-                    <td>{{ target.status }}</td>
+                    <td v-if="target.status=='Alive'"><font color="green">{{ target.status }}</font></td>
+                    <td v-if="target.status=='Dead'"><font color="red">{{ target.status }}</font></td>
+                    <td v-if="target.status=='Danger'"><font color="orange">{{ target.status }}</font></td>
                   </tr>
                 </tbody>
               </table>

@@ -121,10 +121,11 @@ export default {
       })
     },
     checkCode() {
+      var no_case_kill_code = this.kill_code.toLowerCase()
       if(this.killer_status == "Dead") {
-        return (this.danger_list_codes.indexOf(this.kill_code) > -1)
+        return (this.danger_list_codes.indexOf(no_case_kill_code) > -1)
       } else {
-        return (this.target_team_codes.indexOf(this.kill_code) > -1 || this.targeted_by_team_codes.indexOf(this.kill_code) > -1 || this.danger_list_codes.indexOf(this.kill_code) > -1)
+        return (this.target_team_codes.indexOf(no_case_kill_code) > -1 || this.targeted_by_team_codes.indexOf(no_case_kill_code) > -1 || this.danger_list_codes.indexOf(no_case_kill_code) > -1)
       }
     },
     updateTargetKilledStatus() {
@@ -154,13 +155,24 @@ export default {
       firebase.firestore().collection('users').doc(user.email).get()
       .then(doc => {
         self.num_kills = doc.data().num_kills
-        firebase.firestore().collection('users').doc(user.email).update(
-          {
-            num_kills: self.num_kills + 1,
-            days_since_last_kill: 0,
-            status: "Alive"
-          }
-        )
+        if(doc.data().status == "Dead") {
+          firebase.firestore().collection('users').doc(user.email).update(
+            {
+              num_kills: self.num_kills + 1,
+              days_since_last_kill: 0,
+              status: "Alive"
+            }
+          )
+        }
+        else {
+          firebase.firestore().collection('users').doc(user.email).update(
+            {
+              num_kills: self.num_kills + 1,
+              days_since_last_kill: 0,
+              status: "Dead"
+            }
+          )
+        }
       })
     },
     checkIfFinalKillCode() {

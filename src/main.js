@@ -7,11 +7,14 @@ import Vuetify from 'vuetify'
 import VueFire from 'vuefire'
 import 'vuetify/dist/vuetify.min.css'
 import firebase from 'firebase'
+import Chart from 'chart.js'
+import VueChartkick from 'vue-chartkick'
 
 Vue.config.productionTip = false
 
 Vue.use(Vuetify)
 Vue.use(VueFire)
+Vue.use(VueChartkick, {adapter: Chart})
 
 var config = {
     apiKey: "AIzaSyCSDRCUCjtctL82eSWO3055t5lg_9X-AGw",
