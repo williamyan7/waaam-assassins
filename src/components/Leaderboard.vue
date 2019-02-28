@@ -90,6 +90,10 @@ export default {
                     yAxes: [{
                         gridLines: {
                             drawOnChartArea: false
+                        },
+                        ticks: {
+                          min: 0,
+                          stepSize: 1
                         }
                     }]
                 }
@@ -126,6 +130,11 @@ export default {
                       yAxes: [{
                           gridLines: {
                               drawOnChartArea: false
+                          },
+                          ticks: {
+                            min: 0,
+                            max: 1,
+                            stepSize: 0.1
                           }
                       }]
                   }

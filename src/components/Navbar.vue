@@ -57,7 +57,7 @@ export default {
     return {
       user: null,
       is_admin: null,
-      admin_emails: ['williamyan7@gmail.com', 'willyan@wharton.upenn.edu'],
+      admin_emails: ['williamyan7@gmail.com', 'willyan@wharton.upenn.edu', 'linyex@wharton.upenn.edu'],
       sideNav: false
     }
   },
@@ -69,6 +69,7 @@ export default {
             return [
               { title: 'Rules', path: '/rules', icon: 'find_in_page' },
               { title: 'Admin', path: '/admin-dashboard'},
+              { title: 'Email', path: '/email-info'},
               { title: 'Team', path: '/team', icon: 'group'},
               { title: 'Targets', path: '/targets', icon: 'highlight_off'},
               { title: 'Submit Kill', path: '/submitkill', icon: 'highlight_off'},

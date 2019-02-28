@@ -2,7 +2,11 @@
   <v-layout wrap>
     <v-flex class="text-xs-center" mt-3 wrap>
       <h2> Danger List </h2>
-      <p>Some things to know about the danger list will be written here. To be filled out later.</p>
+      <p>A few things to remember about the danger list:</p>
+        ANYONE can kill someone on the danger list, including if you are dead
+        <br>Make sure you do not kill someone in your dynasty by checking below
+        <br>Check this page often since it will constantly be updating
+        <br>To get yourself off the danger list, simply kill someone!
       <h4>Fire Dynasty</h4>
       <div class="row">
         <picture class="column" v-for="target in danger_list_fire"

@@ -24,7 +24,10 @@ import firebase from 'firebase'
 export default {
   data() {
     return {
+      all_users: [],
       kill_code: null,
+      about_to_die_individuals: [],
+      about_to_die_teams: [],
       target_team_codes: [],
       targeted_by_team_codes: [],
       danger_list_codes: [],
@@ -42,12 +45,23 @@ export default {
       killed_code_name: null,
       killer_dynasty: null,
       killed_dynasty: null,
+      kill_time__month: null,
+      kill_time__date: null,
+      kill_time__time: null,
       kill_time: null,
-      killer_status: null
+      killer_status: null,
+      killed_photo: null
     }
   },
   created() {
     var user = firebase.auth().currentUser
+    //Grab all users to bring into local memory
+    firebase.firestore().collection('users').get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        this.all_users.push(doc.data())
+      })
+    })
     firebase.firestore().collection('users').doc(user.email).get()
     .then(doc => {
       this.team_num = doc.data().team_number
@@ -100,7 +114,10 @@ export default {
                 this.killed_user_team_num = doc.data().team_number,
                 this.killed_code_name = doc.data().code_name,
                 this.killed_dynasty = doc.data().dynasty,
-                this.kill_time = new Date()
+                this.killed_photo = doc.data().imageURL,
+                this.kill_time = new Date().toDateString()
+                // this.kill_time__month = kill_time.getMonth()
+                // this.kill_time__date = kill_time.getUTCDate()
                 this.success_feedback = "Congratulations! You've successfully killed " + doc.data().code_name
                 self.kill_code = null
               })
@@ -142,7 +159,8 @@ export default {
           killer_dynasty: this.killer_dynasty,
           killed_code_name: this.killed_code_name,
           killed_dynasty: this.killed_dynasty,
-          kill_time: this.kill_time
+          kill_time: this.kill_time,
+          killed_photo: this.killed_photo
         })
         firebase.firestore().collection('kill_codes').doc('kill_log').update({
           kill_log: current_kill_log
@@ -160,7 +178,7 @@ export default {
             {
               num_kills: self.num_kills + 1,
               days_since_last_kill: 0,
-              status: "Alive"
+              status: "Dead"
             }
           )
         }
@@ -169,7 +187,7 @@ export default {
             {
               num_kills: self.num_kills + 1,
               days_since_last_kill: 0,
-              status: "Dead"
+              status: "Alive"
             }
           )
         }
@@ -177,21 +195,45 @@ export default {
     },
     checkIfFinalKillCode() {
       var target_team_users = []
-      firebase.firestore().collection('users').where('team_number','==',this.killed_user_team_num).get()
-      .then(snapshot => {
-        snapshot.forEach(doc => {
-          if(doc.data().status == "Alive" || doc.data().status == "Danger") {
+      // firebase.firestore().collection('users').where('team_number','==',this.killed_user_team_num).get()
+      // .then(snapshot => {
+      //   snapshot.forEach(doc => {
+      //   })
+      // })
+      for(var i=0; i<this.users.length; i++) {
+        if(this.users[i].team_number == "this.kill_user_team_num") {
+          if(this.users[i].status == "Alive" || this.users[i].status == "Danger") {
             target_team_users.push(doc.data())
           }
-        })
-      })
-      .then(() => {
-        if(target_team_users.length == 0){
-          this.assignNewTarget()
-        } else {
-          console.log('not last target')
         }
-      })
+      }
+      if(target_team_users.length == 0){
+        this.assignNewTarget()
+      } else {
+        console.log('not last target')
+      }
+    },
+    //Below method is different from above in that it is for checking teams about to die
+    //so the action is different, no longer assigning new target
+    checkIfFinalKillCodeReporting() {
+      var target_team_users = []
+      // firebase.firestore().collection('users').where('team_number','==',this.killed_user_team_num).get()
+      // .then(snapshot => {
+      //   snapshot.forEach(doc => {
+      //   })
+      // })
+      for(var i=0; i<this.users.length; i++) {
+        if(this.users[i].team_number == "this.kill_user_team_num") {
+          if(this.users[i].status == "Alive" || this.users[i].status == "Danger") {
+            target_team_users.push(doc.data())
+          }
+        }
+      }
+      if(target_team_users.length == 0){
+        this.assignNewTarget()
+      } else {
+        console.log('not last target')
+      }
     },
     //Logic in this method takes a generic approach regardless of what team the killer is on
     //Reason for this is if killer kills someone on the danger list that is on a team they are not targeting
